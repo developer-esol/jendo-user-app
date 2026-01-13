@@ -1,0 +1,10 @@
+﻿# Don't upload these to EAS
+*.log
+.expo/
+.git/
+node_modules/.cache/
+android-backup-broken/
+attached_assets/
+.local/
+.config/
+logs/

@@ -1,0 +1,1 @@
+export { authStyles } from './styles';

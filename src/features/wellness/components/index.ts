@@ -1,0 +1,1 @@
+export { wellnessStyles } from './styles';

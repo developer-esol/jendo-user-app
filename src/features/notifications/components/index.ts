@@ -1,0 +1,1 @@
+export { notificationsStyles } from './styles';

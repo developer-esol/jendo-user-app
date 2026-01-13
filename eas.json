@@ -1,0 +1,57 @@
+{
+  "cli": {
+    "version": ">= 13.2.1"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://jendo.mytodoo.com/api",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "769769390868-6beh3253vqm8v7m3bi17n5d2kajsc3fl.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyD38I7HQS6_r-ZGaoCb2MHYB2fLSYVMHrM",
+        "EXPO_PUBLIC_APP_NAME": "Jendo Health App",
+        "EXPO_PUBLIC_APP_VERSION": "1.0.0",
+        "EXPO_PUBLIC_ENV": "development"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://jendo.mytodoo.com/api",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "769769390868-6beh3253vqm8v7m3bi17n5d2kajsc3fl.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyD38I7HQS6_r-ZGaoCb2MHYB2fLSYVMHrM",
+        "EXPO_PUBLIC_APP_NAME": "Jendo Health App",
+        "EXPO_PUBLIC_APP_VERSION": "1.0.0",
+        "EXPO_PUBLIC_ENV": "production"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://jendo.mytodoo.com/api",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "769769390868-6beh3253vqm8v7m3bi17n5d2kajsc3fl.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyD38I7HQS6_r-ZGaoCb2MHYB2fLSYVMHrM",
+        "EXPO_PUBLIC_APP_NAME": "Jendo Health App",
+        "EXPO_PUBLIC_APP_VERSION": "1.0.0",
+        "EXPO_PUBLIC_ENV": "production"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

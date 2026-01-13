@@ -1,0 +1,1 @@
+export { medicalRecordsStyles } from './styles';

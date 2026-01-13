@@ -1,0 +1,82 @@
+{
+  "expo": {
+    "name": "Jendo Health",
+    "slug": "jendo-health",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/app-icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jendo.health",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload profile pictures.",
+        "NSCameraUsageDescription": "This app needs access to your camera to take profile pictures."
+      }
+    },
+    "android": {
+      "package": "com.jendo.health",
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/app-icon.png",
+        "backgroundColor": "#371240"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "INTERNET",
+        "POST_NOTIFICATIONS",
+        "WAKE_LOCK",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "ACCESS_NETWORK_STATE",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs access to your photos to upload profile pictures.",
+          "cameraPermission": "The app needs access to your camera to take profile pictures."
+        }
+      ],
+      "expo-web-browser",
+      "@react-native-google-signin/google-signin",
+      "@react-native-firebase/app",
+      [
+        "@react-native-firebase/messaging",
+        { "android": { "default_notification_channel_id": "default" } }
+      ],
+      "@config-plugins/react-native-pdf", 
+      "@config-plugins/react-native-blob-util"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d841ad44-d58f-4e6e-8519-c64967de3b63"
+      }
+    }
+  }
+}

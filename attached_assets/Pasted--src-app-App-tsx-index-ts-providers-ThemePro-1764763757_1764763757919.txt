@@ -1,0 +1,157 @@
+/src
+ ├── app
+ │    ├── App.tsx
+ │    ├── index.ts
+ │    └── providers/
+ │         ├── ThemeProvider.tsx
+ │         ├── AuthProvider.tsx
+ │         └── QueryProvider.tsx        // React Query (best for offline caching)
+ │
+ ├── assets
+ │    ├── fonts/
+ │    ├── icons/
+ │    ├── images/
+ │    └── lottie/
+ │
+ ├── config
+ │    ├── api.config.ts                // API_BASE_URL, timeouts
+ │    ├── env.config.ts                // environment variables
+ │    ├── theme.config.ts              // colors, typography
+ │    └── storage.config.ts            // key names for secure storage
+ │
+ ├── navigation
+ │    ├── RootNavigator.tsx
+ │    ├── AuthNavigator.tsx
+ │    ├── MainNavigator.tsx            // bottom tabs: Dashboard, Jendo, Records, Doctors, Profile
+ │    ├── types.ts
+ │    └── routes.ts
+ │
+ ├── features
+ │    ├── auth/                        // Login, Register, Forgot Password
+ │    │    ├── screens/
+ │    │    ├── components/
+ │    │    ├── hooks/
+ │    │    ├── services/
+ │    │    ├── state/
+ │    │    └── types/
+ │
+ │    ├── dashboard/                   // Home screen + charts
+ │    │    ├── screens/
+ │    │    ├── components/
+ │    │    ├── hooks/
+ │    │    └── services/
+ │
+ │    ├── jendo-tests/                 // Device sync + Jendo test history + reports
+ │    │    ├── screens/
+ │    │    ├── components/
+ │    │    ├── hooks/
+ │    │    ├── services/
+ │    │    └── types/
+ │
+ │    ├── medical-records/             // My Reports (Diabetes, Pregnancy etc.)
+ │    │    ├── screens/
+ │    │    ├── components/
+ │    │    ├── forms/
+ │    │    ├── hooks/
+ │    │    ├── services/
+ │    │    └── types/
+ │
+ │    ├── wellness/                    // Tips, Health advice, lifestyle recommendations
+ │    │    ├── screens/
+ │    │    ├── components/
+ │    │    ├── hooks/
+ │    │    ├── services/
+ │    │    ├── chatbot/                // AI chatbot UI + API integration
+ │    │    └── types/
+ │
+ │    ├── doctors/                     // Directory of doctors
+ │    │    ├── screens/
+ │    │    ├── components/
+ │    │    ├── hooks/
+ │    │    ├── services/
+ │    │    └── types/
+ │
+ │    ├── appointments/                // Appointment booking + eChannelling
+ │    │    ├── screens/
+ │    │    ├── forms/
+ │    │    ├── hooks/
+ │    │    ├── services/
+ │    │    └── types/
+ │
+ │    ├── notifications/               // Alerts, reminders, health warnings
+ │    │    ├── screens/
+ │    │    ├── components/
+ │    │    ├── hooks/
+ │    │    └── services/
+ │
+ │    ├── learning/                    // Articles, videos, health education
+ │    │    ├── screens/
+ │    │    ├── components/
+ │    │    ├── hooks/
+ │    │    ├── services/
+ │    │    └── types/
+ │
+ │    └── profile/                     // User profile, health parameters, settings
+ │         ├── screens/
+ │         ├── components/
+ │         ├── hooks/
+ │         ├── services/
+ │         └── types/
+ │
+ ├── common
+ │    ├── components/
+ │    │    ├── ui/                     // Button, Input, Card, Avatar
+ │    │    ├── layout/                 // Screen wrappers, containers
+ │    │    └── form/                   // Form elements and validators
+ │    ├── hooks/                       // useDebounce, usePagination, useFetch
+ │    ├── utils/                       // helpers
+ │    └── constants/                   // static app constants
+ │
+ ├── domain                            // business rules layer
+ │    ├── entities/                    // UserEntity, TestEntity etc.
+ │    ├── repositories/                // abstract repository interfaces
+ │    └── usecases/                    // FetchTestsUseCase, UpdateProfileUseCase
+ │
+ ├── infrastructure
+ │    ├── api/
+ │    │    ├── httpClient.ts
+ │    │    ├── BaseService.ts
+ │    │    ├── endpoints.ts
+ │    │    └── interceptors/
+ │    │
+ │    ├── database/                    // SQLite local storage for caching
+ │    │    ├── schema/
+ │    │    ├── models/
+ │    │    ├── migrations/
+ │    │    └── index.ts
+ │
+ │    ├── storage/                     // AsyncStorage / MMKV wrappers
+ │    ├── cache/                       // cache control logic
+ │    ├── network/                     // network state handlers
+ │    └── permissions/                 // camera, storage, notifications
+ │
+ ├── services                          // global services usable across features
+ │    ├── AuthService.ts
+ │    ├── JendoTestService.ts
+ │    ├── ReportsService.ts
+ │    ├── MedicalRecordService.ts
+ │    ├── DoctorService.ts
+ │    ├── AppointmentService.ts
+ │    ├── WellnessService.ts
+ │    ├── NotificationService.ts
+ │    └── UserService.ts
+ │
+ ├── state                             // global state: Zustand / Redux Toolkit
+ │    ├── store.ts
+ │    ├── userSlice.ts
+ │    └── appSlice.ts
+ │
+ ├── types
+ │    ├── api/                         // API response/request types
+ │    ├── dto/                         // Data Transfer Objects
+ │    ├── models/                      // Typescript models
+ │    └── global.d.ts                  // global types
+ │
+ └── index.ts
+
+i am going to develop a react native applicaiton. above given the folder structure should be in this project. i used zustand for state management axios for api calling and yup for validatioin, and react query for caching and things. react native paper for components. sqlite for embeded databases. above i give folder structure for get an idea about how should be the folders. and now i want to initalized the project with for one crud. so create doctors crud for initall setup. create needed types and connect relevant folders and things in better standard way align with the given folder setup.  make sure to use dummy data in the api call section not in the ui. because after create the backend api i can simply remove dummy data and comment the dummy data and uncomment the real api call . only create one screen for now and do the crud operationi here for doctors. 
