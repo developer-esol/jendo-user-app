@@ -1,5 +1,5 @@
 import { UserProfile, HealthParameters } from '../../../types/models';
-import { httpClient } from '../../../infrastructure/api';
+import { backendApi } from '../../../services/backendApi';
 import { ENDPOINTS } from '../../../config/api.config';
 
 const DUMMY_USER_PROFILE: UserProfile = {
@@ -89,7 +89,7 @@ export const profileApi = {
         type: type,
       } as any);
 
-      const response = await httpClient.post<{ success: boolean; message: string; data: UserProfile }>(
+      const response = await backendApi.post<{ success: boolean; message: string; data: UserProfile }>(
         ENDPOINTS.USER.UPLOAD_IMAGE,
         formData,
         {

@@ -1,5 +1,5 @@
 import { WellnessTip, LearningMaterial, WellnessCategory, ChatMessage, WellnessRecommendation } from '../../../types/models';
-import { httpClient } from '../../../infrastructure/api';
+import { backendApi } from '../../../services/backendApi';
 import { ENDPOINTS } from '../../../config/api.config';
 
 const DUMMY_WELLNESS_TIPS: WellnessTip[] = [
@@ -93,7 +93,7 @@ export const wellnessApi = {
 
   sendChatMessage: async (message: string, history?: { role: string; content: string }[]): Promise<ChatMessage> => {
     try {
-      const response = await httpClient.post<ChatMessage>(ENDPOINTS.WELLNESS.CHAT, { 
+      const response = await backendApi.post<ChatMessage>(ENDPOINTS.WELLNESS.CHAT, { 
         message,
         history: history || []
       });

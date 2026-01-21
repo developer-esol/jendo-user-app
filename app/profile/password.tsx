@@ -114,15 +114,26 @@ export default function ChangePasswordScreen() {
 
     setLoading(true);
     try {
-      await authApi.changePassword({
+      const result = await authApi.changePassword({
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword,
       });
-      
-      showToast('Password updated successfully!', 'success', 3000);
-      setTimeout(() => {
-        router.back();
-      }, 1500);
+
+      // Handle result safely (guard against null/empty responses)
+      if (result && result.success) {
+        showToast(result.message ?? 'Password updated successfully!', 'success', 3000);
+        setTimeout(() => {
+          router.back();
+        }, 1500);
+      } else {
+        const message = result?.message ?? 'Failed to update password';
+        if (message.toLowerCase().includes('incorrect') || message.toLowerCase().includes('wrong')) {
+          setErrors({ currentPassword: 'Current password is incorrect' });
+          showToast('Current password is incorrect', 'error');
+        } else {
+          showToast(message, 'error');
+        }
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update password';
       if (errorMessage.toLowerCase().includes('incorrect') || errorMessage.toLowerCase().includes('wrong')) {

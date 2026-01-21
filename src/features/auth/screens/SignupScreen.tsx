@@ -7,8 +7,8 @@ import { Button, Input } from '../../../common/components/ui';
 import { COLORS, TYPOGRAPHY, SPACING } from '../../../config/theme.config';
 import { authStyles as styles } from '../components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { authApi } from '../services/authApi';
 import { useToast } from '../../../providers/ToastProvider';
+import { authApi } from '../services/authApi';
 
 interface FormErrors {
   firstName?: string;
@@ -156,25 +156,59 @@ export const SignupScreen: React.FC = () => {
   };
 
   const handleSignup = async () => {
+    console.log('=== SIGNUP BUTTON CLICKED ===');
+    console.log('Form data:', JSON.stringify(formData, null, 2));
+    
     const validationErrors = validate();
     const errorMessages = Object.values(validationErrors).filter(Boolean);
     if (errorMessages.length > 0) {
+      console.log('Validation errors:', validationErrors);
       showToast(errorMessages[0] || 'Please fill in all required fields', 'error');
       return;
     }
     
+    console.log('Validation passed, starting signup...');
     setLoading(true);
     setErrors({}); // Clear previous errors
     
     try {
-      await AsyncStorage.setItem('signupData', JSON.stringify(formData));
-      await authApi.sendOtp({ email: formData.email.trim() });
+      console.log('Calling signup with data:', {
+        email: formData.email.trim(),
+        password: '***hidden***',
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        phone: formData.phone.trim(),
+      });
+      
+      // Save signup data locally and request OTP for email verification
+      const signupData = {
+        email: formData.email.trim(),
+        password: formData.password,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        phone: formData.phone.trim(),
+      };
+
+      await AsyncStorage.setItem('signupData', JSON.stringify(signupData));
+
+      // Request OTP to be sent to user's email
+      await authApi.sendOtp({ email: signupData.email });
+
       setLoading(false);
-      showToast('OTP sent to your email!', 'success');
+      showToast('Verification code sent to your email', 'success');
+
+      // Navigate to verification screen
       router.push('/auth/verify-otp');
     } catch (err) {
+      console.log('=== SIGNUP ERROR ===');
+      console.log('Error type:', typeof err);
+      console.log('Error:', err);
+      console.log('Error message:', err instanceof Error ? err.message : String(err));
+      console.log('Error stack:', err instanceof Error ? err.stack : 'N/A');
+      
       setLoading(false);
       const { field, message } = parseBackendError(err);
+      console.log('Parsed error - field:', field, 'message:', message);
       
       if (field && field !== 'general') {
         setErrors({ [field]: message });
@@ -186,7 +220,6 @@ export const SignupScreen: React.FC = () => {
       }
       
       showToast(message, 'error');
-      // Don't navigate to OTP page if there's an error
     }
   };
 

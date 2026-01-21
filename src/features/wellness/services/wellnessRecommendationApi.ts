@@ -1,4 +1,5 @@
-import { API_ENDPOINTS, httpClient } from '../../../infrastructure/api';
+import { API_ENDPOINTS } from '../../../infrastructure/api';
+import { backendApi } from '../../../services/backendApi';
 
 export interface WellnessRecommendation {
   id?: number | string | null;
@@ -31,7 +32,7 @@ interface ApiResponse<T> {
 export const wellnessRecommendationApi = {
   getByRiskLevel: async (riskLevel: string): Promise<WellnessRecommendation[]> => {
     try {
-      const response = await httpClient.get<ApiResponse<WellnessRecommendation[]>>(
+      const response = await backendApi.get<ApiResponse<WellnessRecommendation[]>>(
         API_ENDPOINTS.WELLNESS.BY_RISK_LEVEL(riskLevel.toUpperCase())
       );
       return response.data || [];
@@ -43,7 +44,7 @@ export const wellnessRecommendationApi = {
 
   getForUser: async (userId: number): Promise<WellnessRecommendation[]> => {
     try {
-      const response = await httpClient.get<ApiResponse<WellnessRecommendation[]>>(
+      const response = await backendApi.get<ApiResponse<WellnessRecommendation[]>>(
         API_ENDPOINTS.WELLNESS.FOR_USER(userId)
       );
       return response.data || [];
@@ -55,7 +56,7 @@ export const wellnessRecommendationApi = {
 
   getDailyAiTipsForUser: async (userId: number): Promise<DailyAiTipsResponse | null> => {
     try {
-      const response = await httpClient.get<ApiResponse<DailyAiTipsResponse>>(
+      const response = await backendApi.get<ApiResponse<DailyAiTipsResponse>>(
         API_ENDPOINTS.WELLNESS.DAILY_AI_TIPS(userId)
       );
       return response.data || null;

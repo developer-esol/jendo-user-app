@@ -9,6 +9,8 @@ import { COLORS, TYPOGRAPHY, SPACING } from '../../../config/theme.config';
 import { authStyles as styles } from '../components';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useToast } from '../../../providers/ToastProvider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authApi } from '../services/authApi';
 
 declare global {
   interface Window {
@@ -60,6 +62,26 @@ export const LoginScreen: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
   const googleButtonRef = useRef<View>(null);
+
+  const [showResend, setShowResend] = useState(false);
+  const [lastEmail, setLastEmail] = useState('');
+
+  const handleResendVerification = async () => {
+    try {
+      const trimmed = email.trim();
+      if (!trimmed) {
+        showToast('Please enter your email to resend verification', 'error');
+        return;
+      }
+      await authApi.sendOtp({ email: trimmed });
+      await AsyncStorage.setItem('resendVerificationEmail', trimmed);
+      showToast('Verification code sent to your email', 'success');
+      router.push('/auth/verify-otp');
+    } catch (err: any) {
+      const message = err?.message || 'Failed to send verification code';
+      showToast(message, 'error');
+    }
+  };
 
   const handleGoogleCredentialResponse = useCallback(async (response: { credential: string }) => {
     setGoogleLoading(true);
@@ -280,13 +302,21 @@ export const LoginScreen: React.FC = () => {
     } catch (err) {
       setLoading(false);
       const { field, message } = parseBackendError(err);
-      
+
+      // Show resend option when verification required
+      if (message && message.toLowerCase().includes('verify')) {
+        setShowResend(true);
+        setLastEmail(email.trim());
+      } else {
+        setShowResend(false);
+      }
+
       if (field && field !== 'general') {
         setErrors({ [field]: message });
       } else if (field === 'general') {
         setErrors({ general: message });
       }
-      
+
       showToast(message, 'error');
     }
   };
@@ -305,6 +335,11 @@ export const LoginScreen: React.FC = () => {
             <View style={localStyles.generalErrorContainer}>
               <Ionicons name="alert-circle" size={20} color="#FF5252" />
               <Text style={localStyles.generalErrorText}>{errors.general}</Text>
+              {showResend && (
+                <TouchableOpacity style={localStyles.resendButton} onPress={handleResendVerification}>
+                  <Text style={localStyles.resendText}>Resend verification code</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
 
@@ -448,5 +483,16 @@ const localStyles = StyleSheet.create({
   loadingText: {
     color: COLORS.primary,
     fontSize: TYPOGRAPHY.fontSize.sm,
+  },
+  resendButton: {
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    backgroundColor: '#FFF8E1',
+  },
+  resendText: {
+    color: '#F57C00',
+    fontWeight: '600',
   },
 });

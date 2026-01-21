@@ -5,9 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
 import { COLORS } from '../../../config/theme.config';
 import { jendoReportApi, JendoReport } from '../services/jendoReportApi';
-import Pdf from 'react-native-pdf';
 import { WebView } from 'react-native-webview';
-import { authService } from '../../../services/authService';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -34,10 +32,6 @@ export const JendoReportDetailScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [authToken, setAuthToken] = useState<string | null>(null);
-  const [outerScrollEnabled, setOuterScrollEnabled] = useState(true);
 
   useEffect(() => {
     loadReportDetails();
@@ -46,11 +40,6 @@ export const JendoReportDetailScreen: React.FC = () => {
   const loadReportDetails = async () => {
     try {
       setLoading(true);
-      
-      // Fetch auth token for PDF viewer
-      const token = await authService.getStoredToken();
-      setAuthToken(token);
-      
       const reportData = await jendoReportApi.getReportById(id as string);
       if (reportData) {
         setReport(reportData);
@@ -74,20 +63,14 @@ export const JendoReportDetailScreen: React.FC = () => {
     try {
       const downloadUrl = jendoReportApi.getDownloadUrl(report.id);
       
-      if (Platform.OS === 'web') {
-        // Create a temporary anchor element to trigger download
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = report.originalFileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        Alert.alert('Success', 'Report download started.');
-      } else {
-        // On mobile, open URL which will prompt download/save
-        await Linking.openURL(downloadUrl);
-        Alert.alert('Success', 'Report download started. Check your downloads folder.');
-      }
+      // Create a temporary anchor element to trigger download
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = report.originalFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      Alert.alert('Success', 'Report download started.');
     } catch (error) {
       console.error('Download error:', error);
       Alert.alert('Error', 'Failed to download report. Please try again.');
@@ -138,61 +121,20 @@ export const JendoReportDetailScreen: React.FC = () => {
       );
     }
 
-    if (Platform.OS === 'web') {
-      return (
-        <WebView
-          originWhitelist={["*"]}
-          source={{ 
-            uri: pdfSourceUri,
-            headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : undefined
-          }}
-          startInLoadingState
-          renderLoading={() => (
-            <ActivityIndicator style={styles.pdfLoader} color={COLORS.primary} />
-          )}
-          onError={(syntheticEvent) => {
-            console.error('Web PDF render error:', syntheticEvent.nativeEvent);
-            setPdfError('Preview is unavailable. Use the download button below.');
-          }}
-          style={styles.pdf}
-        />
-      );
-    }
-
     return (
-      <View
-        style={styles.pdfWrapper}
-        onStartShouldSetResponderCapture={() => { setOuterScrollEnabled(false); return false; }}
-        onResponderRelease={() => setOuterScrollEnabled(true)}
-        onResponderTerminate={() => setOuterScrollEnabled(true)}
-      >
-        <Pdf
-          trustAllCerts={false}
-          source={{ 
-            uri: pdfSourceUri, 
-            cache: true,
-            headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : undefined
-          }}
-          renderActivityIndicator={() => (
-            <ActivityIndicator style={styles.pdfLoader} color={COLORS.primary} />
-          )}
-          onLoadComplete={(numberOfPages: number) => {
-            setTotalPages(numberOfPages);
-            console.log(`PDF loaded with ${numberOfPages} pages`);
-          }}
-          onPageChanged={(page: number) => {
-            setCurrentPage(page);
-          }}
-          onError={(error) => {
-            console.error('PDF render error:', error);
-            setPdfError('Preview is unavailable. Use the download button below.');
-          }}
-          enablePaging={false}
-          horizontal={false}
-          spacing={8}
-          style={styles.pdf}
-        />
-      </View>
+      <WebView
+        originWhitelist={["*"]}
+        source={{ uri: pdfSourceUri }}
+        startInLoadingState
+        renderLoading={() => (
+          <ActivityIndicator style={styles.pdfLoader} color={COLORS.primary} />
+        )}
+        onError={(syntheticEvent) => {
+          console.error('Web PDF render error:', syntheticEvent.nativeEvent);
+          setPdfError('Preview is unavailable. Use the download button below.');
+        }}
+        style={styles.pdf}
+      />
     );
   };
 
@@ -211,20 +153,10 @@ export const JendoReportDetailScreen: React.FC = () => {
       <ScrollView 
         contentContainerStyle={{ padding: 16 }}
         showsVerticalScrollIndicator={false}
-        nestedScrollEnabled={true}
-        scrollEnabled={outerScrollEnabled}
       >
         <View style={styles.pdfContainer}>
           {renderPdfViewer()}
         </View>
-        {totalPages > 0 && (
-          <View style={styles.pageIndicator}>
-            <Text style={styles.pageText}>Page {currentPage} of {totalPages}</Text>
-            {totalPages > 1 && (
-              <Text style={styles.pageHint}>Swipe to navigate pages</Text>
-            )}
-          </View>
-        )}
         <Text style={styles.pdfTitle}>Jendo Vascular Health Report</Text>
         <Text style={styles.pdfMeta}>{formatFileSize(report.fileSize)}</Text>
 
@@ -319,32 +251,14 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   pdfContainer: {
-    height: 550,
+    height: 450,
     width: '100%',
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#E5E7EB',
     backgroundColor: '#F3F4F6',
-    marginBottom: 8,
-  },
-  pdfWrapper: {
-    flex: 1,
-    height: '100%',
-  },
-  pageIndicator: {
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  pageText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  pageHint: {
-    fontSize: 11,
-    color: '#6B7280',
-    marginTop: 2,
+    marginBottom: 12,
   },
   pdf: {
     flex: 1,

@@ -1,5 +1,5 @@
 import { Doctor, DoctorSummary, DoctorSpecialty, Appointment, TimeSlot, AppointmentType } from '../../../types/models';
-import { httpClient } from '../../../infrastructure/api';
+import { backendApi } from '../../../services/backendApi';
 import { ENDPOINTS } from '../../../config/api.config';
 
 interface ApiResponse<T> {
@@ -121,7 +121,7 @@ const mapBackendSpecialtyToFrontend = (specialty: string | null | undefined): Do
 
 export const doctorApi = {
   getAllDoctors: async (page: number = 0, size: number = 10): Promise<{ doctors: DoctorSummary[]; totalPages: number; totalElements: number }> => {
-    const response = await httpClient.get<ApiResponse<PaginationResponse<DoctorBackendDto>>>(
+    const response = await backendApi.get<ApiResponse<PaginationResponse<DoctorBackendDto>>>(
       `${ENDPOINTS.DOCTORS.LIST}?page=${page}&size=${size}`
     );
     
@@ -133,14 +133,14 @@ export const doctorApi = {
   },
 
   getDoctorById: async (id: string): Promise<Doctor> => {
-    const response = await httpClient.get<ApiResponse<DoctorBackendDto>>(
+    const response = await backendApi.get<ApiResponse<DoctorBackendDto>>(
       ENDPOINTS.DOCTORS.DETAIL(id)
     );
     return mapBackendDoctorToDoctor(response.data);
   },
 
   getDoctorsBySpecialty: async (specialty: DoctorSpecialty, page: number = 0, size: number = 10): Promise<{ doctors: DoctorSummary[]; totalPages: number }> => {
-    const response = await httpClient.get<ApiResponse<PaginationResponse<DoctorBackendDto>>>(
+    const response = await backendApi.get<ApiResponse<PaginationResponse<DoctorBackendDto>>>(
       `${ENDPOINTS.DOCTORS.BY_SPECIALTY(specialty)}?page=${page}&size=${size}`
     );
     return {
@@ -150,26 +150,26 @@ export const doctorApi = {
   },
 
   searchDoctors: async (query: string): Promise<DoctorSummary[]> => {
-    const response = await httpClient.get<ApiResponse<DoctorSummary[]>>(
+    const response = await backendApi.get<ApiResponse<DoctorSummary[]>>(
       `${ENDPOINTS.DOCTORS.SEARCH}?q=${encodeURIComponent(query)}`
     );
     return response.data || [];
   },
 
   getAvailableSlots: async (doctorId: string, date: string): Promise<any[]> => {
-    const response = await httpClient.get<ApiResponse<any[]>>(
+    const response = await backendApi.get<ApiResponse<any[]>>(
       `/doctors/${doctorId}/available-slots?date=${date}`
     );
     return response.data || [];
   },
 
   getAppointments: async (): Promise<Appointment[]> => {
-    const response = await httpClient.get<ApiResponse<Appointment[]>>(ENDPOINTS.APPOINTMENTS.LIST);
+    const response = await backendApi.get<ApiResponse<Appointment[]>>(ENDPOINTS.APPOINTMENTS.LIST);
     return response.data || [];
   },
 
   getAppointmentById: async (id: string): Promise<Appointment | null> => {
-    const response = await httpClient.get<ApiResponse<Appointment>>(ENDPOINTS.APPOINTMENTS.DETAIL(id));
+    const response = await backendApi.get<ApiResponse<Appointment>>(ENDPOINTS.APPOINTMENTS.DETAIL(id));
     return response.data || null;
   },
 
@@ -180,7 +180,7 @@ export const doctorApi = {
       'chat': 'CHAT',
     };
     
-    const response = await httpClient.post<ApiResponse<any>>(
+    const response = await backendApi.post<ApiResponse<any>>(
       '/appointments',
       {
         userId: data.userId,
@@ -195,20 +195,20 @@ export const doctorApi = {
   },
 
   updateAppointment: async (id: string, data: Partial<Appointment>): Promise<Appointment> => {
-    const response = await httpClient.put<ApiResponse<Appointment>>(ENDPOINTS.APPOINTMENTS.UPDATE(id), data);
+    const response = await backendApi.put<ApiResponse<Appointment>>(ENDPOINTS.APPOINTMENTS.UPDATE(id), data);
     return response.data;
   },
 
   cancelAppointment: async (id: string): Promise<void> => {
-    await httpClient.post(`/appointments/${id}/cancel`, {});
+    await backendApi.post(`/appointments/${id}/cancel`, {});
   },
 
   deleteAppointment: async (id: string): Promise<void> => {
-    await httpClient.delete(`/appointments/${id}`);
+    await backendApi.delete(`/appointments/${id}`);
   },
 
   getUserAppointments: async (userId: string | number): Promise<any[]> => {
-    const response = await httpClient.get<ApiResponse<PaginationResponse<any>>>(
+    const response = await backendApi.get<ApiResponse<PaginationResponse<any>>>(
       `/appointments/user/${userId}`
     );
     return response.data?.content || [];

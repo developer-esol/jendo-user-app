@@ -1,81 +1,60 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { API_CONFIG } from '../../config/api.config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+/**
+ * Legacy HTTP Client - DEPRECATED
+ * 
+ * ⚠️ MIGRATION NOTICE:
+ * This client is being replaced by the new dual-service architecture:
+ * - authService.ts → Auth Microservice (port 8080)
+ * - backendApi.ts → Jendo Backend (port 8081)
+ * 
+ * Please use the appropriate service for your needs:
+ * - For authentication: import { authService } from '@/services/authService'
+ * - For business logic: import { backendApi } from '@/services/backendApi'
+ * 
+ * This file is kept for backward compatibility only.
+ */
 
-const PUBLIC_ENDPOINTS = [
-  '/auth/login',
-  '/auth/signup',
-  '/auth/send-otp',
-  '/auth/verify-otp',
-  '/auth/forgot-password',
-  '/auth/reset-password',
-  '/auth/google',
-  '/auth/refresh',
-  '/doctors',
-  '/notifications',
-  '/chatbot',
-  '/learning-materials',
-  '/wellness-recommendations'
-];
+import { backendApi } from '../../services/backendApi';
+import { AxiosRequestConfig } from 'axios';
 
 class HttpClient {
-  private instance: AxiosInstance;
-
-  constructor() {
-    this.instance = axios.create({
-      baseURL: API_CONFIG.BASE_URL,
-      timeout: API_CONFIG.TIMEOUT,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    this.setupInterceptors();
-  }
-
-  private setupInterceptors(): void {
-    this.instance.interceptors.request.use(
-      async (config) => {
-        // Only attach token if not a public endpoint
-        const isPublic = PUBLIC_ENDPOINTS.some(path =>
-          config.url?.includes(path)
-        );
-        if (!isPublic) {
-          const token = await AsyncStorage.getItem('jwtToken');
-          if (token) {
-            config.headers = config.headers || {};
-            config.headers['Authorization'] = `Bearer ${token}`;
-          }
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-  }
-
+  /**
+   * @deprecated Use backendApi.get() instead
+   */
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.get<T>(url, config);
-    return response.data;
+    console.warn('⚠️ httpClient is deprecated. Use backendApi instead.');
+    return backendApi.get<T>(url, config);
   }
 
+  /**
+   * @deprecated Use backendApi.post() instead
+   */
   async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.post<T>(url, data, config);
-    return response.data;
+    console.warn('⚠️ httpClient is deprecated. Use backendApi instead.');
+    return backendApi.post<T>(url, data, config);
   }
 
+  /**
+   * @deprecated Use backendApi.put() instead
+   */
   async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.put<T>(url, data, config);
-    return response.data;
+    console.warn('⚠️ httpClient is deprecated. Use backendApi instead.');
+    return backendApi.put<T>(url, data, config);
   }
 
+  /**
+   * @deprecated Use backendApi.put() instead
+   */
   async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.patch<T>(url, data, config);
-    return response.data;
+    console.warn('⚠️ httpClient is deprecated. Use backendApi instead.');
+    return backendApi.put<T>(url, data, config);
   }
 
+  /**
+   * @deprecated Use backendApi.delete() instead
+   */
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.delete<T>(url, config);
-    return response.data;
+    console.warn('⚠️ httpClient is deprecated. Use backendApi instead.');
+    return backendApi.delete<T>(url, config);
   }
 }
 

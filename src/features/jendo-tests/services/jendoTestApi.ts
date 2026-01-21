@@ -1,4 +1,4 @@
-import { httpClient } from '../../../infrastructure/api';
+import { backendApi } from '../../../services/backendApi';
 import { ENDPOINTS } from '../../../config/api.config';
 
 // Backend DTO types
@@ -124,7 +124,7 @@ export const jendoTestApi = {
   getAllTests: async (page = 0, size = 100): Promise<JendoTest[]> => {
     try {
       console.log('=== Fetching all Jendo tests');
-      const response = await httpClient.get<ApiResponse<PaginationResponse<JendoTestResponseDto>>>(
+      const response = await backendApi.get<ApiResponse<PaginationResponse<JendoTestResponseDto>>>(
         `${ENDPOINTS.JENDO_TESTS.LIST}?page=${page}&size=${size}`
       );
 
@@ -143,7 +143,7 @@ export const jendoTestApi = {
   getTestsByUserId: async (userId: number, page = 0, size = 100): Promise<JendoTest[]> => {
     try {
       console.log('=== Fetching Jendo tests for user:', userId);
-      const response = await httpClient.get<ApiResponse<PaginationResponse<JendoTestResponseDto>>>(
+      const response = await backendApi.get<ApiResponse<PaginationResponse<JendoTestResponseDto>>>(
         `/jendo-tests/user/${userId}?page=${page}&size=${size}`
       );
 
@@ -162,7 +162,7 @@ export const jendoTestApi = {
   getTestById: async (id: string): Promise<JendoTest | null> => {
     try {
       console.log('=== Fetching Jendo test:', id);
-      const response = await httpClient.get<ApiResponse<JendoTestResponseDto>>(
+      const response = await backendApi.get<ApiResponse<JendoTestResponseDto>>(
         ENDPOINTS.JENDO_TESTS.DETAIL(id)
       );
 
@@ -185,7 +185,7 @@ export const jendoTestApi = {
   ): Promise<JendoTest[]> => {
     try {
       console.log('=== Fetching tests by date range:', { userId, startDate, endDate });
-      const response = await httpClient.get<ApiResponse<JendoTestResponseDto[]>>(
+      const response = await backendApi.get<ApiResponse<JendoTestResponseDto[]>>(
         `/jendo-tests/user/${userId}/date-range?startDate=${startDate}&endDate=${endDate}`
       );
 
@@ -204,7 +204,7 @@ export const jendoTestApi = {
   createTest: async (data: JendoTestRequestDto): Promise<JendoTest> => {
     try {
       console.log('=== Creating Jendo test:', data);
-      const response = await httpClient.post<ApiResponse<JendoTestResponseDto>>(
+      const response = await backendApi.post<ApiResponse<JendoTestResponseDto>>(
         ENDPOINTS.JENDO_TESTS.CREATE,
         data
       );
@@ -224,7 +224,7 @@ export const jendoTestApi = {
   updateTest: async (id: string, data: JendoTestRequestDto): Promise<JendoTest> => {
     try {
       console.log('=== Updating Jendo test:', { id, data });
-      const response = await httpClient.put<ApiResponse<JendoTestResponseDto>>(
+      const response = await backendApi.put<ApiResponse<JendoTestResponseDto>>(
         `/jendo-tests/${id}`,
         data
       );
@@ -244,7 +244,7 @@ export const jendoTestApi = {
   deleteTest: async (id: string): Promise<void> => {
     try {
       console.log('=== Deleting Jendo test:', id);
-      await httpClient.delete(`/jendo-tests/${id}`);
+      await backendApi.delete(`/jendo-tests/${id}`);
     } catch (error: any) {
       console.error('=== Delete test error:', error);
       throw new Error(error.message || 'Failed to delete test');

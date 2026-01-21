@@ -61,13 +61,17 @@
       ],
       "expo-web-browser",
       "@react-native-google-signin/google-signin",
-      "@react-native-firebase/app",
+      "@config-plugins/react-native-pdf",
+      "@config-plugins/react-native-blob-util",
       [
-        "@react-native-firebase/messaging",
-        { "android": { "default_notification_channel_id": "default" } }
+        "expo-build-properties",
+        {
+          "android": {
+            "ndkVersion": "25.1.8937393"
+          }
+        }
       ],
-      "@config-plugins/react-native-pdf", 
-      "@config-plugins/react-native-blob-util"
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

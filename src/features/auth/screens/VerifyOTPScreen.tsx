@@ -8,12 +8,10 @@ import { COLORS, SPACING, TYPOGRAPHY } from '../../../config/theme.config';
 import { authStyles as styles } from '../components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../services/authApi';
-import { useAuth } from '../../../providers/AuthProvider';
 import { useToast } from '../../../providers/ToastProvider';
 
 export const VerifyOTPScreen: React.FC = () => {
   const router = useRouter();
-  const { signup } = useAuth();
   const { showToast } = useToast();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
@@ -97,29 +95,44 @@ export const VerifyOTPScreen: React.FC = () => {
     
     try {
       const otpCode = otp.join('');
-      // Get signup data from AsyncStorage
+
+      // Try to get signup data (signup flow) or resend email (login verification flow)
       const signupDataStr = await AsyncStorage.getItem('signupData');
-      if (!signupDataStr) {
-        throw new Error('Signup data not found. Please start the signup process again.');
+      const resendEmail = await AsyncStorage.getItem('resendVerificationEmail');
+      let email: string | null = null;
+      let signupData: any = null;
+
+      if (signupDataStr) {
+        signupData = JSON.parse(signupDataStr);
+        email = signupData.email;
+      } else if (resendEmail) {
+        email = resendEmail;
       }
-      const signupData = JSON.parse(signupDataStr);
-      const email = signupData.email;
+
+      if (!email) {
+        throw new Error('No verification flow found. Please start the process again.');
+      }
 
       // 1. Verify OTP
       await authApi.verifyOtp({ email, otp: otpCode });
-      
-      // 2. Send signup data to backend using useAuth hook (stores user in Zustand)
-      await signup(signupData);
-      
-      // 3. Set onboarding flag since user just signed up (already saw onboarding)
-      await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-      
-      // 4. Clear AsyncStorage
-      await AsyncStorage.removeItem('signupData');
-      setLoading(false);
-      
-      showToast('Account created successfully!', 'success');
-      router.replace('/(tabs)');
+
+      if (signupData) {
+        // Signup flow: confirm signup on Auth Service (creates user but does NOT log in)
+        await authApi.confirmSignup(signupData);
+
+        // Clear signup data
+        await AsyncStorage.removeItem('signupData');
+
+        setLoading(false);
+        showToast('Account created successfully! Please login.', 'success');
+        router.replace('/auth/login');
+      } else {
+        // Login verification flow: remove resend key and prompt login
+        await AsyncStorage.removeItem('resendVerificationEmail');
+        setLoading(false);
+        showToast('Email verified successfully! Please login.', 'success');
+        router.replace('/auth/login');
+      }
     } catch (err) {
       setLoading(false);
       const errorMessage = parseBackendError(err);
@@ -152,14 +165,19 @@ export const VerifyOTPScreen: React.FC = () => {
   const handleResend = async () => {
     try {
       const signupDataStr = await AsyncStorage.getItem('signupData');
-      if (!signupDataStr) {
+      const resendEmail = await AsyncStorage.getItem('resendVerificationEmail');
+
+      if (signupDataStr) {
+        const signupData = JSON.parse(signupDataStr);
+        await authApi.sendOtp({ email: signupData.email });
+      } else if (resendEmail) {
+        await authApi.sendOtp({ email: resendEmail });
+      } else {
         showToast('Session expired. Please start signup again.', 'error');
         router.replace('/auth/signup');
         return;
       }
-      const signupData = JSON.parse(signupDataStr);
-      
-      await authApi.sendOtp({ email: signupData.email });
+
       setOtp(['', '', '', '', '', '']);
       setTimer(59);
       setError('');

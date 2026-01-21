@@ -280,7 +280,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, editable, erro
 };
 
 interface FormErrors {
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   phone?: string;
   email?: string;
   weight?: string;
@@ -294,7 +295,8 @@ export default function PersonalInfoScreen() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     dateOfBirth: '',
     email: '',
@@ -308,7 +310,8 @@ export default function PersonalInfoScreen() {
   useEffect(() => {
     if (user) {
       setFormData({
-        fullName: [user.firstName, user.lastName].filter(Boolean).join(' ') || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
         phone: user.phone || '',
         dateOfBirth: user.dateOfBirth || '',
         email: user.email || '',
@@ -324,10 +327,10 @@ export default function PersonalInfoScreen() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = 'Name must be at least 2 characters';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    } else if (formData.firstName.trim().length < 2) {
+      newErrors.firstName = 'First name must be at least 2 characters';
     }
 
     if (formData.phone && !/^\+?[\d\s-]{8,15}$/.test(formData.phone)) {
@@ -364,17 +367,16 @@ export default function PersonalInfoScreen() {
 
     setLoading(true);
     try {
-      const nameParts = formData.fullName.trim().split(' ');
-      const firstName = nameParts[0] || user?.firstName || '';
-      const lastName = nameParts.slice(1).join(' ') || user?.lastName;
+      const firstName = formData.firstName.trim() || user?.firstName || '';
+      const lastName = formData.lastName?.trim() || '';
       
       const updates: Record<string, any> = {};
       
       if (firstName && firstName !== user?.firstName) {
         updates.firstName = firstName;
       }
-      if (lastName !== undefined && lastName !== user?.lastName) {
-        updates.lastName = lastName;
+      if (lastName !== user?.lastName) {
+        updates.lastName = lastName || null;
       }
       if (formData.phone !== user?.phone) {
         updates.phone = formData.phone || null;
@@ -433,7 +435,8 @@ export default function PersonalInfoScreen() {
   const handleCancel = () => {
     if (user) {
       setFormData({
-        fullName: [user.firstName, user.lastName].filter(Boolean).join(' ') || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
         phone: user.phone || '',
         dateOfBirth: user.dateOfBirth || '',
         email: user.email || '',
@@ -482,17 +485,34 @@ export default function PersonalInfoScreen() {
             </TouchableOpacity>
           </View>
 
-          <FormInput
-            label="Full Name"
-            value={formData.fullName}
-            onChangeText={(text) => {
-              setFormData({...formData, fullName: text});
-              if (errors.fullName) setErrors({...errors, fullName: undefined});
-            }}
-            editable={isEditing}
-            placeholder="Enter your full name"
-            error={errors.fullName}
-          />
+          <View style={styles.rowInputs}>
+            <View style={styles.halfInput}>
+              <FormInput
+                label="First Name"
+                value={formData.firstName}
+                onChangeText={(text) => {
+                  setFormData({...formData, firstName: text});
+                  if (errors.firstName) setErrors({...errors, firstName: undefined});
+                }}
+                editable={isEditing}
+                placeholder="First name"
+                error={errors.firstName}
+              />
+            </View>
+            <View style={styles.halfInput}>
+              <FormInput
+                label="Last Name"
+                value={formData.lastName}
+                onChangeText={(text) => {
+                  setFormData({...formData, lastName: text});
+                  if (errors.lastName) setErrors({...errors, lastName: undefined});
+                }}
+                editable={isEditing}
+                placeholder="Last name (optional)"
+                error={errors.lastName}
+              />
+            </View>
+          </View>
 
           <FormInput
             label="Phone"

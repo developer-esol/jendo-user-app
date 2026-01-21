@@ -1,4 +1,4 @@
-import { httpClient } from '../../../infrastructure/api';
+import { backendApi } from '../../../services/backendApi';
 import { ENDPOINTS } from '../../../config/api.config';
 import { Platform } from 'react-native';
 
@@ -78,7 +78,7 @@ export interface UpdateReportValueRequest {
 export const reportApi = {
   getCategories: async (): Promise<ReportCategory[]> => {
     try {
-      const response = await httpClient.get<ApiResponse<ReportCategory[]>>(
+      const response = await backendApi.get<ApiResponse<ReportCategory[]>>(
         ENDPOINTS.REPORTS.CATEGORIES
       );
       return response.data || [];
@@ -90,7 +90,7 @@ export const reportApi = {
 
   getCategoryById: async (id: number): Promise<ReportCategory> => {
     try {
-      const response = await httpClient.get<ApiResponse<ReportCategory>>(
+      const response = await backendApi.get<ApiResponse<ReportCategory>>(
         ENDPOINTS.REPORTS.CATEGORY_DETAIL(id)
       );
       return response.data;
@@ -102,7 +102,7 @@ export const reportApi = {
 
   getCategoryWithSections: async (id: number): Promise<ReportCategory> => {
     try {
-      const response = await httpClient.get<ApiResponse<ReportCategory>>(
+      const response = await backendApi.get<ApiResponse<ReportCategory>>(
         ENDPOINTS.REPORTS.CATEGORY_WITH_SECTIONS(id)
       );
       return response.data;
@@ -114,7 +114,7 @@ export const reportApi = {
 
   getSectionsByCategory: async (categoryId: number): Promise<ReportSection[]> => {
     try {
-      const response = await httpClient.get<ApiResponse<ReportSection[]>>(
+      const response = await backendApi.get<ApiResponse<ReportSection[]>>(
         ENDPOINTS.REPORTS.SECTIONS_BY_CATEGORY(categoryId)
       );
       return response.data || [];
@@ -126,7 +126,7 @@ export const reportApi = {
 
   getSectionWithItems: async (sectionId: number): Promise<ReportSection> => {
     try {
-      const response = await httpClient.get<ApiResponse<ReportSection>>(
+      const response = await backendApi.get<ApiResponse<ReportSection>>(
         ENDPOINTS.REPORTS.SECTION_WITH_ITEMS(sectionId)
       );
       return response.data;
@@ -138,7 +138,7 @@ export const reportApi = {
 
   getItemsBySection: async (sectionId: number): Promise<ReportItem[]> => {
     try {
-      const response = await httpClient.get<ApiResponse<ReportItem[]>>(
+      const response = await backendApi.get<ApiResponse<ReportItem[]>>(
         ENDPOINTS.REPORTS.ITEMS_BY_SECTION(sectionId)
       );
       return response.data || [];
@@ -150,7 +150,7 @@ export const reportApi = {
 
   getValuesByUser: async (userId: number): Promise<ReportItemValue[]> => {
     try {
-      const response = await httpClient.get<ApiResponse<ReportItemValue[]>>(
+      const response = await backendApi.get<ApiResponse<ReportItemValue[]>>(
         ENDPOINTS.REPORTS.VALUES_BY_USER(userId)
       );
       return response.data || [];
@@ -162,7 +162,7 @@ export const reportApi = {
 
   getValuesByItem: async (itemId: number): Promise<ReportItemValue[]> => {
     try {
-      const response = await httpClient.get<ApiResponse<ReportItemValue[]>>(
+      const response = await backendApi.get<ApiResponse<ReportItemValue[]>>(
         ENDPOINTS.REPORTS.VALUES_BY_ITEM(itemId)
       );
       return response.data || [];
@@ -174,7 +174,7 @@ export const reportApi = {
 
   getValuesByUserAndItem: async (userId: number, itemId: number): Promise<ReportItemValue[]> => {
     try {
-      const response = await httpClient.get<ApiResponse<ReportItemValue[]>>(
+      const response = await backendApi.get<ApiResponse<ReportItemValue[]>>(
         ENDPOINTS.REPORTS.VALUES_BY_USER_AND_ITEM(userId, itemId)
       );
       return response.data || [];
@@ -186,7 +186,7 @@ export const reportApi = {
 
   createValue: async (data: CreateReportValueRequest): Promise<ReportItemValue> => {
     try {
-      const response = await httpClient.post<ApiResponse<ReportItemValue>>(
+      const response = await backendApi.post<ApiResponse<ReportItemValue>>(
         ENDPOINTS.REPORTS.VALUES,
         data
       );
@@ -199,7 +199,7 @@ export const reportApi = {
 
   updateValue: async (id: number, data: UpdateReportValueRequest): Promise<ReportItemValue> => {
     try {
-      const response = await httpClient.put<ApiResponse<ReportItemValue>>(
+      const response = await backendApi.put<ApiResponse<ReportItemValue>>(
         ENDPOINTS.REPORTS.VALUE_DETAIL(id),
         data
       );
@@ -212,7 +212,7 @@ export const reportApi = {
 
   deleteValue: async (id: number): Promise<void> => {
     try {
-      await httpClient.delete(ENDPOINTS.REPORTS.VALUE_DETAIL(id));
+      await backendApi.delete(ENDPOINTS.REPORTS.VALUE_DETAIL(id));
     } catch (error: any) {
       console.error('Error deleting value:', error);
       throw new Error(error.message || 'Failed to delete value');
@@ -233,7 +233,7 @@ export const reportApi = {
         } as any);
       }
 
-      const response = await httpClient.post<ApiResponse<ReportItemValue>>(
+      const response = await backendApi.post<ApiResponse<ReportItemValue>>(
         ENDPOINTS.REPORTS.VALUE_ATTACHMENTS(valueId),
         formData,
         {
@@ -251,7 +251,7 @@ export const reportApi = {
 
   deleteAttachment: async (attachmentId: number): Promise<void> => {
     try {
-      await httpClient.delete(ENDPOINTS.REPORTS.DELETE_ATTACHMENT(attachmentId));
+      await backendApi.delete(ENDPOINTS.REPORTS.DELETE_ATTACHMENT(attachmentId));
     } catch (error: any) {
       console.error('Error deleting attachment:', error);
       throw new Error(error.message || 'Failed to delete attachment');

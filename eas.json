@@ -7,7 +7,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://jendo.mytodoo.com/api",
+        "EXPO_PUBLIC_API_URL": "http://192.168.130.49:8081/api",
         "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "769769390868-6beh3253vqm8v7m3bi17n5d2kajsc3fl.apps.googleusercontent.com",
@@ -24,7 +24,7 @@
         "gradleCommand": ":app:assembleDebug"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://jendo.mytodoo.com/api",
+        "EXPO_PUBLIC_API_URL": "http://192.168.130.49:8081/api",
         "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "769769390868-6beh3253vqm8v7m3bi17n5d2kajsc3fl.apps.googleusercontent.com",
@@ -40,7 +40,7 @@
         "gradleCommand": ":app:assembleDebug"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://jendo.mytodoo.com/api",
+        "EXPO_PUBLIC_API_URL": "http://192.168.130.49:8081/api",
         "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "769769390868-6beh3253vqm8v7m3bi17n5d2kajsc3fl.apps.googleusercontent.com",

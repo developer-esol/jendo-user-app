@@ -2,7 +2,7 @@ import messaging from '@react-native-firebase/messaging';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
-import { httpClient } from '../infrastructure/api/httpClient';
+import { backendApi } from './backendApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Href, router } from 'expo-router';
 
@@ -69,7 +69,7 @@ export async function getFcmToken(): Promise<string | null> {
 
 export async function registerDeviceToken(userId: string, token: string) {
   try {
-    await httpClient.post('/notifications/register-device', {
+    await backendApi.post('/notifications/register-device', {
       userId,
       fcmToken: token,
       platform: Platform.OS,
@@ -140,7 +140,7 @@ async function saveNotificationToBackend(
   fcmMessageId?: string
 ) {
   try {
-    const response = await httpClient.post('/notifications/receive', {
+    const response = await backendApi.post('/notifications/receive', {
       userId: parseInt(userId),
       message: body || title,
       type: data?.type || 'SYSTEM',

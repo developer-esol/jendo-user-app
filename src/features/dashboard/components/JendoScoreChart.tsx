@@ -16,13 +16,18 @@ interface JendoScoreChartProps {
 }
 
 export const JendoScoreChart: React.FC<JendoScoreChartProps> = ({ data, containerStyle }) => {
+  // Guard against empty or invalid data to prevent animation crashes
+  const isValidData = data && data.length > 0 && data.every(item => 
+    typeof item.value === 'number' && !isNaN(item.value) && item.date
+  );
+
   const chartData = useMemo(() => {
-    if (data.length === 0) return [];
+    if (!isValidData) return [];
     
     return data.map((item, index) => ({
       value: item.value,
       label: item.date,
-      dataPointText: String(item.value),
+      dataPointText: String(Math.round(item.value)),
       labelComponent: () => (
         <Text style={{ 
           fontSize: 10, 
@@ -57,7 +62,25 @@ export const JendoScoreChart: React.FC<JendoScoreChartProps> = ({ data, containe
         }} />
       ),
     }));
-  }, [data]);
+  }, [data, isValidData]);
+
+  // Return empty state if no valid data
+  if (!isValidData || chartData.length === 0) {
+    return (
+      <View style={[{
+        height: 180,
+        backgroundColor: '#F8FAFC',
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }, containerStyle]}>
+        <Text style={{ color: COLORS.textSecondary, fontSize: 14 }}>
+          No score data available
+        </Text>
+      </View>
+    );
+  }
 
   const values = data.map(d => d.value);
   const maxValue = Math.max(...values) + 10;
@@ -122,9 +145,9 @@ export const JendoScoreChart: React.FC<JendoScoreChartProps> = ({ data, containe
         maxValue={maxValue}
         yAxisLabelWidth={36}
         yAxisOffset={minValue}
-        animateOnDataChange
+        animateOnDataChange={false}
         animationDuration={800}
-        onDataChangeAnimationDuration={500}
+        onDataChangeAnimationDuration={0}
         pointerConfig={{
           pointerStripHeight: 120,
           pointerStripColor: COLORS.primary,

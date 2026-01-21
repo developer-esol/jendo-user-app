@@ -1,0 +1,5 @@
+2026.01.15 10:20:54 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at e:\jendo-user-app\.metals\lsp.trace.json or C:\Users\USER\AppData\Local\scalameta\metals\cache\lsp.trace.json
+2026.01.15 10:21:27 INFO  logging to files E:\jendo-user-app\.metals\metals.log
+2026.01.15 10:21:27 INFO  Started: Metals version 1.6.4 in folders 'E:\jendo-user-app' for client Visual Studio Code 1.108.0.
+2026.01.15 10:21:27 INFO  time: initialize in 0.17s
+2026.01.15 10:21:34 WARN  Using H2 2.4.240 which is newer than the version Flyway has been verified with. The latest verified version of H2 is 2.3.232.

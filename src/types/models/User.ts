@@ -34,7 +34,6 @@ export interface AuthResponse {
   refreshToken?: string;
   userId: number;
   email: string;
-  fullName: string;
   user: UserProfile;
   profileComplete: boolean;
 }
