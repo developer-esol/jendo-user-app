@@ -247,9 +247,92 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [setUser]);
 
   const loginWithGoogle = useCallback(async (data: GoogleAuthData): Promise<AuthResponse> => {
-    // TODO: Implement Google OAuth with Auth Service
-    // For now, throw error indicating this needs to be implemented
-    throw new Error('Google OAuth integration with Auth Service is not yet implemented');
+    console.log('=== AUTH PROVIDER GOOGLE LOGIN ===');
+    
+    // Get the appropriate client ID (web client ID is used for ID token verification)
+    const clientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || 
+                     process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || 
+                     '769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com';
+    
+    console.log('Using clientId:', clientId);
+    console.log('ID Token (first 50 chars):', data.idToken.substring(0, 50) + '...');
+    
+    // Login via Auth Service with Google
+    const authData = await authService.loginWithGoogle(data.idToken, clientId);
+    console.log('Auth Service Google login successful, userId:', authData.user.id);
+    
+    // Map Auth Service response to app's AuthResponse format
+    const response: AuthResponse = {
+      token: authData.accessToken,
+      refreshToken: authData.refreshToken,
+      userId: authData.user.id,
+      email: authData.user.email,
+      user: authData.user as any,
+      profileComplete: false, // Auth Service doesn't track this
+    };
+    
+    // Store legacy tokens for backward compatibility
+    await storageService.setItem(STORAGE_KEYS.AUTH_TOKEN, response.token);
+    await storageService.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(response.user));
+    
+    if (response.refreshToken) {
+      await storageService.setItem('refreshToken', response.refreshToken);
+    }
+    
+    // CRITICAL: Fetch or create Jendo profile
+    console.log('=== FETCHING/CREATING JENDO PROFILE AFTER GOOGLE LOGIN ===');
+    try {
+      const jendoProfileResponse = await backendApi.get('/users/me');
+      console.log('Jendo profile fetched:', JSON.stringify(jendoProfileResponse, null, 2));
+      
+      const jendoUser = jendoProfileResponse?.data || jendoProfileResponse?.user;
+      
+      if (jendoUser) {
+        console.log('✅ Using Jendo profile for user state:', jendoUser);
+        setUser(jendoUser as any);
+        setProfileComplete(!!jendoUser.firstName && !!jendoUser.lastName);
+        await storageService.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(jendoUser));
+      } else {
+        // Fallback to Auth user if Jendo profile doesn't exist
+        console.warn('⚠️ Jendo profile not found, using Auth user');
+        setUser(response.user as any);
+        setProfileComplete(response.profileComplete || false);
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to fetch Jendo profile:', error.message);
+      
+      // Try to create Jendo profile for new Google users
+      if (error.message?.includes('404') || error.response?.status === 404) {
+        try {
+          console.log('Creating Jendo profile for new Google user...');
+          const profilePayload = {
+            authUserId: authData.user.id,
+            email: authData.user.email,
+            firstName: authData.user.firstName || '',
+            lastName: authData.user.lastName || '',
+            phone: null,
+          };
+          
+          const jendoProfileResponse = await backendApi.post('/jendo-users', profilePayload);
+          console.log('Jendo profile created:', JSON.stringify(jendoProfileResponse, null, 2));
+          
+          if (jendoProfileResponse?.user) {
+            setUser(jendoProfileResponse.user as any);
+            setProfileComplete(jendoProfileResponse.profileComplete || false);
+            await storageService.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(jendoProfileResponse.user));
+          }
+        } catch (createError: any) {
+          console.error('❌ Failed to create Jendo profile:', createError.message);
+        }
+      }
+      
+      // Use Auth user data as fallback
+      setUser(response.user as any);
+      setProfileComplete(response.profileComplete || false);
+    }
+    
+    console.log('=== AUTH PROVIDER GOOGLE LOGIN COMPLETE ===');
+    return response;
   }, [setUser]);
 
   const logout = useCallback(async () => {

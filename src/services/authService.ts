@@ -39,6 +39,11 @@ interface RegisterRequest {
   lastName?: string;
 }
 
+interface GoogleLoginRequest {
+  idToken: string;
+  clientId: string;
+}
+
 interface AuthResponse {
   accessToken: string;
   refreshToken: string;
@@ -150,6 +155,46 @@ class AuthService {
       await secureStorage.deleteItem(REFRESH_TOKEN_KEY);
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  }
+
+  /**
+   * Login or register user via Google OAuth (Mobile)
+   * 
+   * @param idToken Google ID token from mobile sign-in
+   * @param clientId The Google client ID used for sign-in
+   * @returns Auth response with JWT token
+   */
+  async loginWithGoogle(idToken: string, clientId: string): Promise<AuthResponse> {
+    console.log('=== AUTH SERVICE GOOGLE LOGIN ===');
+    console.log('AUTH_SERVICE_URL:', AUTH_SERVICE_URL);
+    
+    try {
+      console.log('Making POST request to:', `${AUTH_SERVICE_URL}/mobile/google`);
+      const response = await this.client.post<ApiResponse<AuthResponse>>('/mobile/google', {
+        idToken,
+        clientId,
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response data:', JSON.stringify(response.data, null, 2));
+      
+      const authData = response.data.data;
+
+      // Store tokens securely
+      console.log('Storing tokens...');
+      await this.storeToken(authData.accessToken);
+      await this.storeRefreshToken(authData.refreshToken);
+      console.log('Tokens stored successfully');
+
+      return authData;
+    } catch (error: any) {
+      console.log('=== AUTH SERVICE GOOGLE LOGIN ERROR ===');
+      console.log('Error type:', typeof error);
+      console.log('Error message:', error.message);
+      console.log('Error code:', error.code);
+      console.log('Error response:', error.response?.data);
+      throw this.handleError(error);
     }
   }
 
