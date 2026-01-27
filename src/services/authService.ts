@@ -2,7 +2,7 @@
  * Auth Service API - Connects to External Auth Microservice
  * 
  * This service handles ALL authentication operations via the Auth Microservice (port 8080).
- * The backend (port 8081) ONLY receives JWT tokens for validation.
+ * The backend (port 8090) ONLY receives JWT tokens for validation.
  * 
  * CRITICAL RULES:
  * ❌ DO NOT store tokens in localStorage (web) or AsyncStorage insecurely

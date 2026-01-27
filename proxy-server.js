@@ -3,7 +3,7 @@ const http = require('http');
 const httpProxy = require('http-proxy');
 
 const API_TARGET = 'http://127.0.0.1:8080';
-const EXPO_PORT = 8081;
+const EXPO_PORT = 8090;
 const PROXY_PORT = 5000;
 
 const proxy = httpProxy.createProxyServer({});

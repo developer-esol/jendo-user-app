@@ -4,7 +4,7 @@
  * ⚠️ MIGRATION NOTICE:
  * This client is being replaced by the new dual-service architecture:
  * - authService.ts → Auth Microservice (port 8080)
- * - backendApi.ts → Jendo Backend (port 8081)
+ * - backendApi.ts → Jendo Backend (port 8090)
  * 
  * Please use the appropriate service for your needs:
  * - For authentication: import { authService } from '@/services/authService'

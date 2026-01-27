@@ -59,8 +59,45 @@ export async function requestPushPermission(): Promise<boolean> {
 
 export async function getFcmToken(): Promise<string | null> {
   try {
-    const token = await messaging().getToken();
-    return token;
+    // Ensure messaging is initialized and device is registered for remote messages.
+    try {
+      await messaging().registerDeviceForRemoteMessages();
+      messaging().setAutoInitEnabled(true);
+    } catch (regErr) {
+      console.debug('Could not register device for remote messages (non-fatal):', regErr);
+    }
+
+    // Try to get token with retries. Some environments may return FIS_AUTH_ERROR; retrying and deleting token can help.
+    const maxAttempts = 3;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const token = await messaging().getToken();
+        if (token) return token;
+      } catch (err: any) {
+        console.log(`FCM token attempt ${attempt} error`, err?.message || err);
+
+        // Known error: Firebase Installations auth error - give explicit guidance
+        const msg = (err && (err.message || String(err))) || '';
+        if (msg.includes('FIS_AUTH_ERROR') || msg.includes('FIS_AUTH')) {
+          console.warn('FIS_AUTH_ERROR detected - this usually means the Firebase Installations authentication failed.');
+          console.warn('Common fixes: ensure google-services.json / GoogleService-Info.plist is present and the package/bundle id matches the Firebase project; add SHA-1 for Android debug keystore in Firebase console.');
+
+          // Try deleting token and retrying once
+          try {
+            await messaging().deleteToken();
+            console.info('Deleted existing FCM token, will retry');
+          } catch (delErr) {
+            console.warn('Failed to delete FCM token during recovery attempt', delErr);
+          }
+        }
+
+        // small backoff
+        await new Promise((res) => setTimeout(res, attempt * 500));
+      }
+    }
+
+    console.warn('Unable to retrieve FCM token after retries');
+    return null;
   } catch (e) {
     console.log('FCM token error', e);
     return null;
@@ -68,8 +105,16 @@ export async function getFcmToken(): Promise<string | null> {
 }
 
 export async function registerDeviceToken(userId: string, token: string) {
+  const storageKey = `registeredFcmToken:${userId}`;
   try {
-    await backendApi.post('/notifications/register-device', {
+    // Avoid re-registering same token repeatedly
+    const existing = await AsyncStorage.getItem(storageKey);
+    if (existing === token) {
+      console.log('✅ FCM token already registered for user, skipping backend call');
+      return true;
+    }
+
+    const resp = await backendApi.post('/notifications/register-device', {
       userId,
       fcmToken: token,
       platform: Platform.OS,
@@ -78,9 +123,14 @@ export async function registerDeviceToken(userId: string, token: string) {
         osVersion: Device.osVersion
       }
     });
-    console.log('✅ Device token registered:', token);
+
+    // On success, persist registered token to avoid duplicate calls
+    await AsyncStorage.setItem(storageKey, token);
+    console.log('✅ Device token registered:', token, resp);
+    return true;
   } catch (e) {
     console.log('Register device token failed', e);
+    return false;
   }
 }
 
@@ -269,14 +319,26 @@ export async function initPushForUser(userId?: string | number) {
       return;
     }
 
-    const token = await getFcmToken();
+    // Try to fetch token with a couple of attempts
+    let token: string | null = null;
+    for (let i = 0; i < 3; i++) {
+      token = await getFcmToken();
+      if (token) break;
+      console.warn(`Attempt ${i + 1} to get FCM token failed, retrying...`);
+      await new Promise((res) => setTimeout(res, 1000 * (i + 1)));
+    }
+
     if (token) {
       console.log('🔑 FCM Token:', token);
-      await registerDeviceToken(String(userId), token);
-      attachNotificationListeners();
-      console.log('✅ Push notifications initialized successfully');
+      const ok = await registerDeviceToken(String(userId), token);
+      if (ok) {
+        attachNotificationListeners();
+        console.log('✅ Push notifications initialized successfully');
+      } else {
+        console.warn('⚠️ Failed to register FCM token with backend');
+      }
     } else {
-      console.log('❌ Failed to get FCM token');
+      console.log('❌ Failed to get FCM token after retries');
     }
   } catch (error) {
     console.error('❌ Error initializing push notifications:', error);

@@ -1,7 +1,7 @@
 /**
  * Backend API Client
  * 
- * This client handles ALL business logic API calls to Jendo Backend (port 8081).
+ * This client handles ALL business logic API calls to Jendo Backend (port 8090).
  * JWT tokens from Auth Service MUST be attached to every request.
  * 
  * CRITICAL RULES:
@@ -15,8 +15,8 @@ import axios from 'axios';
 import type { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { authService } from './authService';
 
-// Backend runs on port 8081
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.130.49:8081/api';
+// Backend runs on port 8090
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.130.49:8090/api';
 
 interface ApiErrorResponse {
   success: boolean;
