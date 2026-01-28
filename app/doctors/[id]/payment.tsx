@@ -59,7 +59,7 @@ export default function PaymentGatewayRoute() {
   const isFormValid = cardNumber.length >= 19 && expiryDate.length >= 5 && cvv.length >= 3 && cardHolder.length > 0;
 
   return (
-    <ScreenWrapper safeArea backgroundColor={COLORS.white}>
+    <ScreenWrapper safeArea backgroundColor={COLORS.white} edges={[]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />

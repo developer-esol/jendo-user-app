@@ -11,6 +11,7 @@ interface ScreenWrapperProps {
   safeArea?: boolean;
   keyboardAvoiding?: boolean;
   backgroundColor?: string;
+  edges?: ('top' | 'bottom' | 'left' | 'right')[];
 }
 
 export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
@@ -21,6 +22,7 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   safeArea = true,
   keyboardAvoiding = true,
   backgroundColor,
+  edges = ['top'],
 }) => {
   const containerStyle = [
     styles.container,
@@ -53,7 +55,7 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   );
 
   if (safeArea) {
-    return <SafeAreaView style={styles.flex} edges={['top']}>{wrappedContent}</SafeAreaView>;
+    return <SafeAreaView style={styles.flex} edges={edges}>{wrappedContent}</SafeAreaView>;
   }
 
   return wrappedContent;

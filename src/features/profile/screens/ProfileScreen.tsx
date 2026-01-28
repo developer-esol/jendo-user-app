@@ -193,7 +193,7 @@ export const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white}>
+    <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white} edges={[]}>
       <View style={styles.header}>
         <Image source={{ uri: userAvatar || defaultAvatar }} style={styles.avatar} />
         <Text style={styles.headerTitle}>Profile</Text>

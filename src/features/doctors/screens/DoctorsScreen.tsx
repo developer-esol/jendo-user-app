@@ -119,10 +119,10 @@ export const DoctorsScreen: React.FC = () => {
   // Show loading state
   if (loading) {
     return (
-      <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white}>
+      <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white} edges={[]}>
         <View style={styles.header}>
           <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="finger-print" size={24} color={COLORS.primary} />
+            <Image source={require('../../../../assets/images/jendo-logo.png')} style={{ width: 24, height: 24, tintColor: COLORS.primary }} resizeMode="contain" />
           </View>
           <Text style={styles.headerTitle}>Our Doctors</Text>
           <TouchableOpacity 
@@ -143,10 +143,10 @@ export const DoctorsScreen: React.FC = () => {
   // Show error state
   if (error) {
     return (
-      <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white}>
+      <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white} edges={[]}>
         <View style={styles.header}>
           <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="finger-print" size={24} color={COLORS.primary} />
+            <Image source={require('../../../../assets/images/jendo-logo.png')} style={{ width: 24, height: 24, tintColor: COLORS.primary }} resizeMode="contain" />
           </View>
           <Text style={styles.headerTitle}>Our Doctors</Text>
           <TouchableOpacity 
@@ -172,10 +172,10 @@ export const DoctorsScreen: React.FC = () => {
   }
 
   return (
-    <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white}>
+    <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white} edges={[]}>
       <View style={styles.header}>
         <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="finger-print" size={24} color={COLORS.primary} />
+          <Image source={require('../../../../assets/images/jendo-logo.png')} style={{ width: 24, height: 24, tintColor: COLORS.primary }} resizeMode="contain" />
         </View>
         <Text style={styles.headerTitle}>Our Doctors</Text>
         <TouchableOpacity 
@@ -188,7 +188,7 @@ export const DoctorsScreen: React.FC = () => {
 
       <TouchableOpacity 
         style={styles.appointmentsButton}
-        onPress={() => router.push('/appointments')}
+        onPress={() => router.push('/appointments' as any)}
       >
         <Ionicons name="calendar" size={20} color={COLORS.primary} />
         <Text style={styles.appointmentsButtonText}>View My Appointments</Text>

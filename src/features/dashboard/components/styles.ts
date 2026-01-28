@@ -310,6 +310,37 @@ export const dashboardStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  chatbotCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.accentLight,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    marginHorizontal: SPACING.md,
+  },
+  chatbotIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
+  },
+  chatbotContent: {
+    flex: 1,
+  },
+  chatbotTitle: {
+    fontSize: TYPOGRAPHY.fontSize.md,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: 2,
+  },
+  chatbotDescription: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+  },
   bottomPadding: {
     height: SPACING.xxl,
   },

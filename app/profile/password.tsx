@@ -147,7 +147,7 @@ export default function ChangePasswordScreen() {
     }
   };
 
-  const getPasswordStrength = (password: string): { strength: string; color: string; width: string } => {
+  const getPasswordStrength = (password: string): { strength: string; color: string; width: `${number}%` } => {
     if (!password) return { strength: '', color: 'transparent', width: '0%' };
     
     let score = 0;

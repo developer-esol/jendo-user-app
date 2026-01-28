@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, Modal, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
@@ -37,6 +37,8 @@ export const SignupScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const validate = (): FormErrors => {
     const newErrors: FormErrors = {};
@@ -61,8 +63,22 @@ export const SignupScreen: React.FC = () => {
     
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^\+?[\d\s-]{8,15}$/.test(formData.phone.trim())) {
-      newErrors.phone = 'Please enter a valid phone number';
+    } else {
+      const phone = formData.phone.trim();
+      // Remove spaces and dashes for validation
+      const cleanPhone = phone.replace(/[\s-]/g, '');
+      
+      if (!/^\+?\d+$/.test(cleanPhone)) {
+        newErrors.phone = 'Phone number can only contain digits, spaces, dashes, and +';
+      } else if (cleanPhone.startsWith('+') && cleanPhone.length < 11) {
+        newErrors.phone = 'International phone number must be at least 10 digits';
+      } else if (!cleanPhone.startsWith('+') && cleanPhone.length < 10) {
+        newErrors.phone = 'Phone number must be at least 10 digits';
+      } else if (cleanPhone.length > 15) {
+        newErrors.phone = 'Phone number cannot exceed 15 digits';
+      } else if (cleanPhone.startsWith('+94') && cleanPhone.length !== 12) {
+        newErrors.phone = 'Sri Lankan number should be in format +94XXXXXXXXX (12 digits total)';
+      }
     }
     
     if (!formData.password) {
@@ -156,59 +172,25 @@ export const SignupScreen: React.FC = () => {
   };
 
   const handleSignup = async () => {
-    console.log('=== SIGNUP BUTTON CLICKED ===');
-    console.log('Form data:', JSON.stringify(formData, null, 2));
-    
     const validationErrors = validate();
     const errorMessages = Object.values(validationErrors).filter(Boolean);
     if (errorMessages.length > 0) {
-      console.log('Validation errors:', validationErrors);
       showToast(errorMessages[0] || 'Please fill in all required fields', 'error');
       return;
     }
     
-    console.log('Validation passed, starting signup...');
     setLoading(true);
     setErrors({}); // Clear previous errors
     
     try {
-      console.log('Calling signup with data:', {
-        email: formData.email.trim(),
-        password: '***hidden***',
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
-        phone: formData.phone.trim(),
-      });
-      
-      // Save signup data locally and request OTP for email verification
-      const signupData = {
-        email: formData.email.trim(),
-        password: formData.password,
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
-        phone: formData.phone.trim(),
-      };
-
-      await AsyncStorage.setItem('signupData', JSON.stringify(signupData));
-
-      // Request OTP to be sent to user's email
-      await authApi.sendOtp({ email: signupData.email });
-
+      await AsyncStorage.setItem('signupData', JSON.stringify(formData));
+      await authApi.sendOtp({ email: formData.email.trim() });
       setLoading(false);
-      showToast('Verification code sent to your email', 'success');
-
-      // Navigate to verification screen
+      showToast('OTP sent to your email!', 'success');
       router.push('/auth/verify-otp');
     } catch (err) {
-      console.log('=== SIGNUP ERROR ===');
-      console.log('Error type:', typeof err);
-      console.log('Error:', err);
-      console.log('Error message:', err instanceof Error ? err.message : String(err));
-      console.log('Error stack:', err instanceof Error ? err.stack : 'N/A');
-      
       setLoading(false);
       const { field, message } = parseBackendError(err);
-      console.log('Parsed error - field:', field, 'message:', message);
       
       if (field && field !== 'general') {
         setErrors({ [field]: message });
@@ -220,6 +202,7 @@ export const SignupScreen: React.FC = () => {
       }
       
       showToast(message, 'error');
+      // Don't navigate to OTP page if there's an error
     }
   };
 
@@ -239,6 +222,22 @@ export const SignupScreen: React.FC = () => {
   };
 
   const passwordStrength = getPasswordStrength(formData.password);
+
+  const handleTermsPress = () => {
+    setShowTermsModal(true);
+  };
+
+  const handlePrivacyPress = () => {
+    setShowPrivacyModal(true);
+  };
+
+  const handleAcceptTerms = () => {
+    setAgreed(true);
+    setShowTermsModal(false);
+    setShowPrivacyModal(false);
+    if (errors.terms) setErrors({...errors, terms: undefined});
+    showToast('Thank you for accepting our terms', 'success');
+  };
 
   return (
     <ScreenWrapper safeArea backgroundColor={COLORS.white}>
@@ -381,24 +380,30 @@ export const SignupScreen: React.FC = () => {
               {errors.confirmPassword && <Text style={localStyles.errorText}>{errors.confirmPassword}</Text>}
             </View>
 
-            <TouchableOpacity 
-              style={styles.termsRow}
-              onPress={() => {
-                setAgreed(!agreed);
-                if (errors.terms) setErrors({...errors, terms: undefined});
-              }}
-            >
-              <View style={[styles.checkbox, agreed && styles.checkboxChecked, errors.terms && localStyles.checkboxError]}>
-                {agreed && <Ionicons name="checkmark" size={14} color={COLORS.white} />}
-              </View>
-              <Text style={styles.termsText}>
-                I agree to the{' '}
-                <Text style={styles.termsLink}>Terms of Service</Text>
-                {' '}and{' '}
-                <Text style={styles.termsLink}>Privacy Policy</Text>
-              </Text>
-            </TouchableOpacity>
-            {errors.terms && <Text style={localStyles.errorText}>{errors.terms}</Text>}
+            <View style={localStyles.termsContainer}>
+              <TouchableOpacity 
+                style={localStyles.termsRow}
+                onPress={() => {
+                  setAgreed(!agreed);
+                  if (errors.terms) setErrors({...errors, terms: undefined});
+                }}
+              >
+                <View style={[styles.checkbox, agreed && styles.checkboxChecked, errors.terms && localStyles.checkboxError]}>
+                  {agreed && <Ionicons name="checkmark" size={14} color={COLORS.white} />}
+                </View>
+                <View style={localStyles.termsTextContainer}>
+                  <Text style={localStyles.termsTextStyle}>I agree to the </Text>
+                  <TouchableOpacity onPress={handleTermsPress}>
+                    <Text style={[styles.termsLink, localStyles.clickableLink]}>Terms of Service</Text>
+                  </TouchableOpacity>
+                  <Text style={localStyles.termsTextStyle}> and </Text>
+                  <TouchableOpacity onPress={handlePrivacyPress}>
+                    <Text style={[styles.termsLink, localStyles.clickableLink]}>Privacy Policy</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+              {errors.terms && <Text style={localStyles.errorText}>{errors.terms}</Text>}
+            </View>
 
             <Button
               title="Create Account"
@@ -416,6 +421,131 @@ export const SignupScreen: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Privacy Policy Modal - Adding comprehensive content */}
+      <Modal
+        visible={showPrivacyModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowPrivacyModal(false)}
+      >
+        <View style={localStyles.modalContainer}>
+          <View style={localStyles.modalHeader}>
+            <Text style={localStyles.modalTitle}>Privacy Policy</Text>
+            <TouchableOpacity onPress={() => setShowPrivacyModal(false)}>
+              <Ionicons name="close" size={28} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={localStyles.modalContent} showsVerticalScrollIndicator={true}>
+            <Text style={localStyles.lastUpdated}>Last Updated: January 15, 2026</Text>
+            
+            <Text style={localStyles.sectionText}>
+              Welcome to Jendo Health. We are committed to protecting your privacy and ensuring the security of your personal health information in accordance with the Personal Data Protection Act No. 9 of 2022 of Sri Lanka.
+            </Text>
+
+            <Text style={localStyles.sectionTitle}>1. Information We Collect</Text>
+            <Text style={localStyles.subTitle}>1.1 Personal Information</Text>
+            <Text style={localStyles.bulletPoint}>• Account Information: Name, email, phone, date of birth</Text>
+            <Text style={localStyles.bulletPoint}>• Health Information: Medical records, test results, medications</Text>
+            <Text style={localStyles.bulletPoint}>• Profile Information: Photo, health preferences, settings</Text>
+
+            <Text style={localStyles.sectionTitle}>2. How We Use Your Information</Text>
+            <Text style={localStyles.bulletPoint}>• Providing health tracking and medical record management</Text>
+            <Text style={localStyles.bulletPoint}>• Facilitating doctor consultations</Text>
+            <Text style={localStyles.bulletPoint}>• Managing appointments and test results</Text>
+
+            <Text style={localStyles.sectionTitle}>3. Data Security</Text>
+            <Text style={localStyles.bulletPoint}>• Industry-standard SSL/TLS encryption (AES-256)</Text>
+            <Text style={localStyles.bulletPoint}>• Secure, encrypted server storage</Text>
+            <Text style={localStyles.bulletPoint}>• Multi-factor authentication for staff access</Text>
+
+            <Text style={localStyles.sectionTitle}>4. Your Rights</Text>
+            <Text style={localStyles.bulletPoint}>• Right to Access: Request a copy of your personal data</Text>
+            <Text style={localStyles.bulletPoint}>• Right to Rectification: Correct inaccurate data</Text>
+            <Text style={localStyles.bulletPoint}>• Right to Erasure: Request deletion of your data</Text>
+
+            <Text style={localStyles.sectionTitle}>5. Contact Us</Text>
+            <Text style={localStyles.bulletPoint}>• Email: info@jendoinnovations.com</Text>
+            <Text style={localStyles.bulletPoint}>• Phone: +94 76 621 0120</Text>
+
+            <View style={localStyles.spacer} />
+          </ScrollView>
+
+          <View style={localStyles.modalFooter}>
+            <Button
+              title="Accept & Continue"
+              onPress={handleAcceptTerms}
+              style={localStyles.acceptButton}
+            />
+            <TouchableOpacity onPress={() => setShowPrivacyModal(false)} style={localStyles.declineButton}>
+              <Text style={localStyles.declineText}>Decline</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Terms of Service Modal */}
+      <Modal
+        visible={showTermsModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowTermsModal(false)}
+      >
+        <View style={localStyles.modalContainer}>
+          <View style={localStyles.modalHeader}>
+            <Text style={localStyles.modalTitle}>Terms of Service</Text>
+            <TouchableOpacity onPress={() => setShowTermsModal(false)}>
+              <Ionicons name="close" size={28} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={localStyles.modalContent} showsVerticalScrollIndicator={true}>
+            <Text style={localStyles.lastUpdated}>Last Updated: January 9, 2026</Text>
+            
+            <Text style={localStyles.sectionText}>
+              Welcome to Jendo Health. By using our application, you agree to these Terms of Service.
+            </Text>
+
+            <Text style={localStyles.sectionTitle}>1. Acceptance of Terms</Text>
+            <Text style={localStyles.sectionText}>
+              By accessing or using Jendo Health, you agree to be bound by these Terms. If you disagree with any part, you may not use our services.
+            </Text>
+
+            <Text style={localStyles.sectionTitle}>2. Medical Disclaimer</Text>
+            <Text style={localStyles.sectionText}>
+              Jendo Health provides health information and tracking tools but does not provide medical advice, diagnosis, or treatment. Always consult qualified healthcare professionals.
+            </Text>
+
+            <Text style={localStyles.sectionTitle}>3. User Responsibilities</Text>
+            <Text style={localStyles.bulletPoint}>• Provide accurate health information</Text>
+            <Text style={localStyles.bulletPoint}>• Maintain account security and confidentiality</Text>
+            <Text style={localStyles.bulletPoint}>• Use services lawfully and respectfully</Text>
+
+            <Text style={localStyles.sectionTitle}>4. Account Registration</Text>
+            <Text style={localStyles.sectionText}>
+              You must provide accurate information during registration. You are responsible for maintaining the confidentiality of your account credentials.
+            </Text>
+
+            <Text style={localStyles.sectionTitle}>5. Contact Information</Text>
+            <Text style={localStyles.bulletPoint}>• Email: info@jendoinnovations.com</Text>
+            <Text style={localStyles.bulletPoint}>• Phone: +94 76 621 0120</Text>
+
+            <View style={localStyles.spacer} />
+          </ScrollView>
+
+          <View style={localStyles.modalFooter}>
+            <Button
+              title="Accept & Continue"
+              onPress={handleAcceptTerms}
+              style={localStyles.acceptButton}
+            />
+            <TouchableOpacity onPress={() => setShowTermsModal(false)} style={localStyles.declineButton}>
+              <Text style={localStyles.declineText}>Decline</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScreenWrapper>
   );
 };
@@ -469,5 +599,131 @@ const localStyles = StyleSheet.create({
   strengthText: {
     fontSize: TYPOGRAPHY.fontSize.sm,
     fontWeight: '500',
+  },
+  termsContainer: {
+    marginBottom: SPACING.md,
+  },
+  termsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SPACING.sm,
+  },
+  termsTextContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    paddingTop: 2,
+  },
+  termsTextStyle: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+  },
+  clickableLink: {
+    textDecorationLine: 'underline',
+  },
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    backgroundColor: COLORS.white,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+  },
+  modalContent: {
+    flex: 1,
+    padding: SPACING.lg,
+  },
+  lastUpdated: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: COLORS.textSecondary,
+    fontStyle: 'italic',
+    marginBottom: SPACING.lg,
+  },
+  sectionTitle: {
+    fontSize: TYPOGRAPHY.fontSize.lg,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  subTitle: {
+    fontSize: TYPOGRAPHY.fontSize.md,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.xs,
+  },
+  sectionText: {
+    fontSize: TYPOGRAPHY.fontSize.md,
+    color: COLORS.textPrimary,
+    lineHeight: 22,
+    marginBottom: SPACING.sm,
+  },
+  bulletPoint: {
+    fontSize: TYPOGRAPHY.fontSize.md,
+    color: COLORS.textPrimary,
+    lineHeight: 22,
+    marginBottom: SPACING.xs,
+    paddingLeft: SPACING.sm,
+  },
+  boldText: {
+    fontWeight: '700',
+  },
+  highlightBox: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    backgroundColor: '#FFF3E0',
+    padding: SPACING.md,
+    borderRadius: SPACING.xs,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF9800',
+    marginVertical: SPACING.md,
+  },
+  highlightText: {
+    flex: 1,
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: '#E65100',
+    lineHeight: 20,
+  },
+  spacer: {
+    height: SPACING.xl * 2,
+  },
+  modalFooter: {
+    padding: SPACING.lg,
+    paddingBottom: SPACING.xl,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    backgroundColor: COLORS.white,
+  },
+  acceptButton: {
+    backgroundColor: COLORS.primary,
+    marginBottom: SPACING.xs,
+  },
+  declineButton: {
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  declineText: {
+    fontSize: TYPOGRAPHY.fontSize.md,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
   },
 });

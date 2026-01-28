@@ -42,11 +42,11 @@ class HttpClient {
   }
 
   /**
-   * @deprecated Use backendApi.put() instead
+   * @deprecated Use backendApi.patch() instead
    */
   async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     console.warn('⚠️ httpClient is deprecated. Use backendApi instead.');
-    return backendApi.put<T>(url, data, config);
+    return backendApi.patch<T>(url, data, config);
   }
 
   /**

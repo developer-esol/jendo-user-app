@@ -17,7 +17,7 @@ import type { AxiosInstance } from 'axios';
 import { secureStorage } from '../utils/secureStorage';
 
 // Auth Service runs on port 8080
-const AUTH_SERVICE_URL = process.env.EXPO_PUBLIC_AUTH_URL || 'http://192.168.130.49:8080/api/auth';
+const AUTH_SERVICE_URL = process.env.EXPO_PUBLIC_AUTH_URL || 'http://188.166.240.119:8080/api/auth';
 
 console.log('=== AUTH SERVICE INITIALIZED ===');
 console.log('process.env.EXPO_PUBLIC_AUTH_URL:', process.env.EXPO_PUBLIC_AUTH_URL);

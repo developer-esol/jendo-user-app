@@ -145,9 +145,7 @@ export const JendoReportDetailScreen: React.FC = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Report Details</Text>
-        <TouchableOpacity onPress={() => router.push('/notifications')}>
-          <Ionicons name="notifications" size={24} color={COLORS.primary} />
-        </TouchableOpacity>
+        <View style={{ width: 24 }} />
       </View>
 
       <ScrollView 

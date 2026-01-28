@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
 import { COLORS } from '../../../config/theme.config';
 import { dashboardStyles as styles } from '../components';
@@ -266,10 +266,10 @@ export const HomeScreen: React.FC = () => {
   const hasTestData = jendoTests.length > 0;
 
   return (
-    <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.background}>
+    <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.background} edges={[]}>
       <View style={styles.header}>
         <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="finger-print" size={24} color={COLORS.primary} />
+          <Image source={require('../../../../assets/images/jendo-logo.png')} style={{ width: 24, height: 24, tintColor: COLORS.primary }} resizeMode="contain" />
         </View>
         <Text style={styles.headerTitle}>Home</Text>
         <TouchableOpacity style={styles.notificationButton} onPress={() => router.push('/notifications')}>
@@ -539,24 +539,21 @@ export const HomeScreen: React.FC = () => {
           </View>
         )}
 
-        <View style={styles.reminderCard}>
-          <View style={styles.reminderContent}>
-            <View style={styles.reminderIcon}>
-              <Ionicons name="calendar" size={20} color={COLORS.primary} />
-            </View>
-            <View style={styles.reminderText}>
-              <Text style={styles.reminderTitle}>Test Reminder</Text>
-              <Text style={styles.reminderSubtitle}>
-                {hasTestData 
-                  ? 'Keep up with regular Jendo tests for better health tracking.'
-                  : "You haven't done your Jendo test yet. Start now!"}
-              </Text>
-            </View>
+        <TouchableOpacity 
+          style={styles.chatbotCard}
+          onPress={() => router.push('/wellness/chatbot' as any)}
+        >
+          <View style={styles.chatbotIconContainer}>
+            <MaterialCommunityIcons name="robot" size={28} color={COLORS.primary} />
           </View>
-          <TouchableOpacity style={styles.chatButton} onPress={() => router.push('/wellness/chatbot')}>
-            <Ionicons name="chatbubble-ellipses" size={22} color={COLORS.white} />
-          </TouchableOpacity>
-        </View>
+          <View style={styles.chatbotContent}>
+            <Text style={styles.chatbotTitle}>Health Assistant</Text>
+            <Text style={styles.chatbotDescription}>
+              Ask questions about your heart health and get personalized advice
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color={COLORS.textMuted} />
+        </TouchableOpacity>
 
         <View style={styles.bottomPadding} />
       </ScrollView>

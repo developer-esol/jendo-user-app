@@ -42,8 +42,15 @@ const getNotificationColor = (type: NotificationType): string => {
 };
 
 const formatTime = (dateString: string) => {
-  const date = new Date(dateString);
+  // Backend sends LocalDateTime which is stored in server's timezone (UTC)
+  // If the string doesn't have 'Z' suffix, add it to treat as UTC
+  const utcDateString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+  
+  // Parse as UTC and convert to local device time
+  const date = new Date(utcDateString);
   const now = new Date();
+  
+  // Calculate difference in milliseconds
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
@@ -53,6 +60,8 @@ const formatTime = (dateString: string) => {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
+  
+  // For older notifications, show date in local timezone
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
@@ -93,7 +102,7 @@ export const NotificationsScreen: React.FC = () => {
       setNotifications(notifs);
       setUnreadCount(count);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error('Error fetching DoctorDetails:', error);
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
@@ -62,10 +62,10 @@ export const WellnessScreen: React.FC = () => {
   );
 
   return (
-    <ScreenWrapper safeArea backgroundColor={COLORS.white}>
+    <ScreenWrapper safeArea backgroundColor={COLORS.white} edges={[]}>
       <View style={styles.header}>
         <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="finger-print" size={24} color={COLORS.primary} />
+          <Image source={require('../../../../assets/images/jendo-logo.png')} style={{ width: 24, height: 24, tintColor: COLORS.primary }} resizeMode="contain" />
         </View>
         <Text style={styles.headerTitle}>Wellness Recommendations</Text>
         <TouchableOpacity 
@@ -139,9 +139,9 @@ export const WellnessScreen: React.FC = () => {
                         }}
                         onPress={() =>
                           router.push({
-                            pathname: `/wellness/${category.key}`,
+                            pathname: `/wellness/${category.key}` as any,
                             params: { tip: JSON.stringify(tip) },
-                          })
+                          } as any)
                         }
                       >
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
@@ -178,28 +178,6 @@ export const WellnessScreen: React.FC = () => {
             </View>
           </View>
           
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoryFilters}
-          >
-            <TouchableOpacity style={[styles.categoryChip, styles.categoryChipActive]}>
-              <Text style={[styles.categoryChipText, styles.categoryChipTextActive]}>All</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryChip}>
-              <Text style={styles.categoryChipText}>Diet</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryChip}>
-              <Text style={styles.categoryChipText}>Exercise</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryChip}>
-              <Text style={styles.categoryChipText}>Stress</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryChip}>
-              <Text style={styles.categoryChipText}>Sleep</Text>
-            </TouchableOpacity>
-          </ScrollView>
-
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}

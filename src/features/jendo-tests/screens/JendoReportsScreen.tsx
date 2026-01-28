@@ -130,7 +130,7 @@ export const JendoReportsScreen: React.FC = () => {
         paddingVertical: 12,
       }}>
         <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="finger-print" size={24} color={COLORS.primary} />
+          <Image source={require('../../../../assets/images/jendo-logo.png')} style={{ width: 24, height: 24, tintColor: COLORS.primary }} resizeMode="contain" />
         </View>
         <Text style={{ fontSize: 20, fontWeight: '700', color: COLORS.primary }}>Jendo Reports</Text>
         <TouchableOpacity 

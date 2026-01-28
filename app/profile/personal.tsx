@@ -460,7 +460,7 @@ export default function PersonalInfoScreen() {
   };
 
   return (
-    <ScreenWrapper safeArea backgroundColor={COLORS.white}>
+    <ScreenWrapper safeArea backgroundColor={COLORS.white} edges={[]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
@@ -477,12 +477,6 @@ export default function PersonalInfoScreen() {
           <View style={styles.sectionHeader}>
             <Ionicons name="person" size={18} color={COLORS.primary} />
             <Text style={styles.sectionTitle}>Personal Details</Text>
-            <TouchableOpacity 
-              style={styles.editButton}
-              onPress={handleEditToggle}
-            >
-              <Ionicons name={isEditing ? "checkmark" : "pencil"} size={18} color={COLORS.primary} />
-            </TouchableOpacity>
           </View>
 
           <View style={styles.rowInputs}>
@@ -612,9 +606,14 @@ export default function PersonalInfoScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity style={styles.backToProfileButton} onPress={() => router.back()}>
-            <Text style={styles.backToProfileText}>Back to Profile</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.editProfileButton} onPress={() => setIsEditing(true)}>
+              <Text style={styles.editProfileText}>Edit Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.backToProfileButton} onPress={() => router.back()}>
+              <Text style={styles.backToProfileText}>Back to Profile</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </ScrollView>
     </ScreenWrapper>
@@ -750,12 +749,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   backToProfileButton: {
-    backgroundColor: COLORS.primary,
+    flex: 1,
+    backgroundColor: COLORS.textSecondary,
     borderRadius: BORDER_RADIUS.lg,
     paddingVertical: SPACING.md,
     alignItems: 'center',
   },
   backToProfileText: {
+    fontSize: TYPOGRAPHY.fontSize.md,
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+  editProfileButton: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
+    borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  editProfileText: {
     fontSize: TYPOGRAPHY.fontSize.md,
     fontWeight: '600',
     color: COLORS.white,

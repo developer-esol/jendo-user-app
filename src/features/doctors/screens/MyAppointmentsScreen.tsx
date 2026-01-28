@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Modal } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
@@ -20,6 +20,7 @@ interface AppointmentData {
   qualifications: string;
   type: string;
   status: string;
+  fee?: number;
 }
 
 export const MyAppointmentsScreen: React.FC = () => {
@@ -30,9 +31,6 @@ export const MyAppointmentsScreen: React.FC = () => {
   const [appointments, setAppointments] = useState<AppointmentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [appointmentToCancel, setAppointmentToCancel] = useState<AppointmentData | null>(null);
-  const [cancelling, setCancelling] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -96,35 +94,11 @@ export const MyAppointmentsScreen: React.FC = () => {
     }
   };
 
-  const handleCancelPress = (appointment: AppointmentData) => {
-    setAppointmentToCancel(appointment);
-    setShowCancelModal(true);
-  };
-
-  const handleCancelConfirm = async () => {
-    if (!appointmentToCancel) return;
-
-    try {
-      setCancelling(true);
-      await doctorApi.cancelAppointment(appointmentToCancel.id.toString());
-      showToast('Appointment cancelled successfully', 'success');
-      setShowCancelModal(false);
-      setAppointmentToCancel(null);
-      fetchAppointments();
-    } catch (error) {
-      console.error('Error cancelling appointment:', error);
-      showToast('Failed to cancel appointment', 'error');
-    } finally {
-      setCancelling(false);
-    }
-  };
-
   const renderAppointment = ({ item }: { item: AppointmentData }) => {
     const statusColors = getStatusColor(item.status);
-    const isUpcoming = item.status?.toLowerCase() === 'scheduled' || item.status?.toLowerCase() === 'confirmed';
 
     return (
-      <TouchableOpacity
+      <View
         style={{
           backgroundColor: '#fff',
           borderRadius: 16,
@@ -136,7 +110,6 @@ export const MyAppointmentsScreen: React.FC = () => {
           shadowRadius: 8,
           elevation: 3,
         }}
-        activeOpacity={0.7}
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <View style={{ flex: 1 }}>
@@ -160,7 +133,7 @@ export const MyAppointmentsScreen: React.FC = () => {
           <Text style={{ fontSize: 14, color: COLORS.textSecondary }}>{formatTime(item.time)}</Text>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
           <MaterialCommunityIcons 
             name={item.type?.toUpperCase() === 'VIDEO' ? 'video' : item.type?.toUpperCase() === 'CHAT' ? 'chat' : 'hospital-building'} 
             size={16} 
@@ -175,22 +148,21 @@ export const MyAppointmentsScreen: React.FC = () => {
           </Text>
         </View>
 
-        {isUpcoming && (
-          <TouchableOpacity
-            onPress={() => handleCancelPress(item)}
-            style={{
-              borderWidth: 1,
-              borderColor: '#F44336',
-              paddingVertical: 10,
-              borderRadius: 8,
-              alignItems: 'center',
-              marginTop: 4,
-            }}
-          >
-            <Text style={{ fontSize: 14, fontWeight: '500', color: '#F44336' }}>Cancel Appointment</Text>
-          </TouchableOpacity>
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.push(`/appointments/${item.id}` as any)}
+          style={{
+            backgroundColor: COLORS.primary,
+            paddingVertical: 12,
+            borderRadius: 8,
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'center',
+          }}
+        >
+          <Ionicons name="eye-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
+          <Text style={{ fontSize: 14, fontWeight: '600', color: '#fff' }}>View Details</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -217,7 +189,8 @@ export const MyAppointmentsScreen: React.FC = () => {
         <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
           <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
         </TouchableOpacity>
-        <Text style={{ flex: 1, fontSize: 18, fontWeight: '600', textAlign: 'center', marginRight: 32 }}>My Appointments</Text>
+        <Text style={{ flex: 1, fontSize: 18, fontWeight: '600', textAlign: 'center' }}>My Appointments</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <FlatList
@@ -255,63 +228,6 @@ export const MyAppointmentsScreen: React.FC = () => {
           </View>
         )}
       />
-
-      <Modal
-        visible={showCancelModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowCancelModal(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <View style={{ backgroundColor: '#fff', borderRadius: 20, padding: 24, maxWidth: 320, width: '100%' }}>
-            <View style={{ alignItems: 'center', marginBottom: 16 }}>
-              <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#FFEBEE', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="alert-circle" size={32} color="#F44336" />
-              </View>
-            </View>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.textPrimary, textAlign: 'center', marginBottom: 8 }}>
-              Cancel Appointment?
-            </Text>
-            <Text style={{ fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', marginBottom: 24 }}>
-              Are you sure you want to cancel your appointment with {appointmentToCancel?.doctorName}?
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowCancelModal(false);
-                  setAppointmentToCancel(null);
-                }}
-                style={{
-                  flex: 1,
-                  backgroundColor: '#F5F5F5',
-                  paddingVertical: 12,
-                  borderRadius: 8,
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{ fontSize: 14, fontWeight: '600', color: COLORS.textPrimary }}>Keep It</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleCancelConfirm}
-                disabled={cancelling}
-                style={{
-                  flex: 1,
-                  backgroundColor: '#F44336',
-                  paddingVertical: 12,
-                  borderRadius: 8,
-                  alignItems: 'center',
-                }}
-              >
-                {cancelling ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#fff' }}>Cancel</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </ScreenWrapper>
   );
 };

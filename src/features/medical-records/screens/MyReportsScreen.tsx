@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
@@ -83,10 +83,10 @@ export const MyReportsScreen: React.FC = () => {
   };
 
   return (
-    <ScreenWrapper safeArea backgroundColor={COLORS.background}>
+    <ScreenWrapper safeArea backgroundColor={COLORS.background} edges={[]}>
       <View style={styles.header}>
         <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="finger-print" size={24} color={COLORS.primary} />
+          <Image source={require('../../../../assets/images/jendo-logo.png')} style={{ width: 24, height: 24, tintColor: COLORS.primary }} resizeMode="contain" />
         </View>
         <Text style={styles.headerTitle}>My Reports</Text>
         <TouchableOpacity 
@@ -144,20 +144,6 @@ export const MyReportsScreen: React.FC = () => {
                     <Text style={styles.categoryName}>{category.name}</Text>
                   </TouchableOpacity>
                 ))}
-              </View>
-
-              <View style={styles.recentSection}>
-                <Text style={styles.recentTitle}>Recent Activity</Text>
-                <TouchableOpacity style={styles.activityCard} activeOpacity={0.7}>
-                  <View style={[styles.activityIcon, { backgroundColor: '#FCE4EC' }]}>
-                    <Ionicons name="document-text" size={24} color={COLORS.primary} />
-                  </View>
-                  <View style={styles.activityInfo}>
-                    <Text style={styles.activityTitle}>Blood Sugar Report</Text>
-                    <Text style={styles.activityTime}>Added 2 hours ago</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-                </TouchableOpacity>
               </View>
             </>
           )}

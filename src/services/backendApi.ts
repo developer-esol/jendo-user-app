@@ -16,7 +16,7 @@ import type { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axio
 import { authService } from './authService';
 
 // Backend runs on port 8090
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.130.49:8090/api';
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://188.166.240.119:8090/api';
 
 interface ApiErrorResponse {
   success: boolean;
@@ -193,6 +193,19 @@ class BackendApiClient {
    */
   async put<T = any>(url: string, data?: any, config?: any): Promise<T> {
     const response = await this.client.put<T>(url, data, config);
+    return response.data;
+  }
+
+  /**
+   * Generic PATCH request
+   * 
+   * @param url Endpoint URL
+   * @param data Request body
+   * @param config Request config
+   * @returns Response data
+   */
+  async patch<T = any>(url: string, data?: any, config?: any): Promise<T> {
+    const response = await this.client.patch<T>(url, data, config);
     return response.data;
   }
 

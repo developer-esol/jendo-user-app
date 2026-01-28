@@ -56,7 +56,7 @@ export const DoctorDetailScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <ScreenWrapper safeArea backgroundColor={COLORS.white}>
+      <ScreenWrapper safeArea backgroundColor={COLORS.white} edges={[]}>
         <View style={styles.headerWithBorder}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
@@ -74,7 +74,7 @@ export const DoctorDetailScreen: React.FC = () => {
 
   if (!doctor) {
     return (
-      <ScreenWrapper safeArea backgroundColor={COLORS.white}>
+      <ScreenWrapper safeArea backgroundColor={COLORS.white} edges={[]}>
         <View style={styles.headerWithBorder}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
@@ -90,7 +90,7 @@ export const DoctorDetailScreen: React.FC = () => {
   }
 
   return (
-    <ScreenWrapper safeArea backgroundColor={COLORS.white}>
+    <ScreenWrapper safeArea backgroundColor={COLORS.white} edges={[]}>
       <View style={styles.headerWithBorder}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />

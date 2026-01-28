@@ -54,7 +54,7 @@ export const COLORS = {
   headerAccent: '#E91E63',
   
   disabled: '#BDBDBD',
-  placeholder: '#9E9E9E',
+  placeholder: '#BDBDBD',
   backdrop: 'rgba(0, 0, 0, 0.5)',
   overlay: 'rgba(0, 0, 0, 0.3)',
   
