@@ -14,6 +14,14 @@ export interface JendoReportResponseDto {
   downloadUrl: string;
 }
 
+// Request DTO for creating a Jendo report with MinIO URL
+export interface JendoReportCreateRequest {
+  userId: number;
+  reportUrl: string;
+  fileName?: string;
+  description?: string;
+}
+
 interface ApiResponse<T> {
   success: boolean;
   message?: string;
@@ -92,6 +100,29 @@ export const jendoReportApi = {
     } catch (error: any) {
       console.error('=== Get report by ID error:', error);
       throw new Error(error.message || 'Failed to fetch Jendo report');
+    }
+  },
+
+  /**
+   * Create a Jendo report with a MinIO URL
+   */
+  createReport: async (request: JendoReportCreateRequest): Promise<JendoReport> => {
+    try {
+      console.log('=== Creating Jendo report for user:', request.userId);
+      const response = await httpClient.post<ApiResponse<JendoReportResponseDto>>(
+        ENDPOINTS.JENDO_REPORTS.CREATE,
+        request
+      );
+
+      if (response.data) {
+        console.log('=== Report created successfully');
+        return mapBackendReportToFrontend(response.data);
+      }
+
+      throw new Error('Failed to create Jendo report');
+    } catch (error: any) {
+      console.error('=== Create report error:', error);
+      throw new Error(error.message || 'Failed to create Jendo report');
     }
   },
 

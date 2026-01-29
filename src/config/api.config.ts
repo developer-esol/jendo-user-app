@@ -57,7 +57,7 @@ export const ENDPOINTS = {
     BY_USER: (userId: number) => `/jendo-reports/user/${userId}`,
     DOWNLOAD: (id: string) => `/jendo-reports/${id}/download`,
     DELETE: (id: string) => `/jendo-reports/${id}`,
-    UPLOAD: '/jendo-reports/upload',
+    CREATE: '/jendo-reports/create',
   },
   WELLNESS: {
     TIPS: '/wellness/tips',
