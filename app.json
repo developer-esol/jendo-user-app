@@ -20,6 +20,8 @@
       "package": "com.jendo.health",
       "googleServicesFile": "./google-services.json",
       "versionCode": 1,
+      "usesCleartextTraffic": true,
+      "networkSecurityConfig": "./network_security_config.xml",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon.png",
         "backgroundColor": "#371240"

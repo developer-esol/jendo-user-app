@@ -21,10 +21,12 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleDebug"
+        "gradleCommand": ":app:assembleRelease"
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "http://188.166.240.119:8090/api",
+        "EXPO_PUBLIC_AUTH_URL": "http://188.166.240.119:8080/api/auth",
+        "EXPO_PUBLIC_BACKEND_URL": "http://188.166.240.119:8090/api",
         "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "769769390868-6beh3253vqm8v7m3bi17n5d2kajsc3fl.apps.googleusercontent.com",
@@ -37,10 +39,12 @@
     "production": {
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleDebug"
+        "gradleCommand": ":app:assembleRelease"
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "http://188.166.240.119:8090/api",
+        "EXPO_PUBLIC_AUTH_URL": "http://188.166.240.119:8080/api/auth",
+        "EXPO_PUBLIC_BACKEND_URL": "http://188.166.240.119:8090/api",
         "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "769769390868-c72e6rj0o76dou1hmebcrbmj2tn08cqr.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "769769390868-6beh3253vqm8v7m3bi17n5d2kajsc3fl.apps.googleusercontent.com",
