@@ -13,6 +13,7 @@ export interface JendoTestRequestDto {
   testDate?: string; // YYYY-MM-DD
   vascularRisk?: number;
   pdfFilePath?: string;
+  reportUrl?: string; // MinIO URL for PDF preview
 }
 
 export interface JendoTestResponseDto {
@@ -28,6 +29,7 @@ export interface JendoTestResponseDto {
   testDate: string; // YYYY-MM-DD
   vascularRisk?: number;
   pdfFilePath?: string;
+  reportPreviewUrl?: string; // MinIO URL for direct PDF preview
   createdAt: string; // ISO timestamp
 }
 
@@ -65,6 +67,7 @@ export interface JendoTest {
   spo2?: number;
   vascularRisk?: number;
   pdfFilePath?: string;
+  reportPreviewUrl?: string; // MinIO URL for direct PDF preview
   createdAt: string;
 }
 
@@ -115,6 +118,7 @@ const mapBackendTestToFrontend = (dto: JendoTestResponseDto): JendoTest => {
     spo2: spo2Value,
     vascularRisk: vascularRiskValue,
     pdfFilePath: dto.pdfFilePath,
+    reportPreviewUrl: dto.reportPreviewUrl,
     createdAt: dto.createdAt,
   };
 };
