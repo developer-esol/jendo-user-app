@@ -15,6 +15,39 @@ export interface JendoTestRequestDto {
   pdfFilePath?: string;
 }
 
+// Combined request for creating test with report in a single call
+export interface JendoTestWithReportRequestDto {
+  userId: number;
+  score?: number;
+  heartRate?: number;
+  riskLevel?: string;
+  testTime?: string; // HH:mm:ss
+  bloodPressure?: string; // "120/80"
+  spo2?: number;
+  testDate?: string; // YYYY-MM-DD
+  vascularRisk?: number;
+  reportUrl: string; // Required: MinIO URL for the report PDF
+  fileName?: string;
+  description?: string;
+}
+
+// Response DTO for combined test + report creation
+export interface JendoTestWithReportResponseDto {
+  test: JendoTestResponseDto;
+  report: {
+    id: number;
+    userId: number;
+    fileName: string;
+    originalFileName: string;
+    fileSize: number;
+    contentType: string;
+    description?: string;
+    uploadedAt: string;
+    downloadUrl: string;
+  };
+  message: string;
+}
+
 export interface JendoTestResponseDto {
   id: number;
   userId: number;
@@ -217,6 +250,57 @@ export const jendoTestApi = {
     } catch (error: any) {
       console.error('=== Create test error:', error);
       throw new Error(error.message || 'Failed to create test');
+    }
+  },
+
+  /**
+   * Create a Jendo test with report in a single API call
+   * This is the preferred method for mobile app - creates both test result and PDF report atomically
+   */
+  createTestWithReport: async (data: JendoTestWithReportRequestDto): Promise<{
+    test: JendoTest;
+    report: {
+      id: string;
+      userId: string;
+      fileName: string;
+      originalFileName: string;
+      fileSize: number;
+      contentType: string;
+      description?: string;
+      uploadedAt: string;
+      downloadUrl: string;
+    };
+    message: string;
+  }> => {
+    try {
+      console.log('=== Creating Jendo test with report:', data);
+      const response = await backendApi.post<ApiResponse<JendoTestWithReportResponseDto>>(
+        ENDPOINTS.JENDO_TESTS.CREATE_WITH_REPORT,
+        data
+      );
+
+      if (response.data) {
+        return {
+          test: mapBackendTestToFrontend(response.data.test),
+          report: {
+            id: response.data.report.id.toString(),
+            userId: response.data.report.userId.toString(),
+            fileName: response.data.report.fileName,
+            originalFileName: response.data.report.originalFileName,
+            fileSize: response.data.report.fileSize,
+            contentType: response.data.report.contentType,
+            description: response.data.report.description,
+            uploadedAt: response.data.report.uploadedAt,
+            downloadUrl: response.data.report.downloadUrl,
+          },
+          message: response.data.message,
+        };
+      }
+
+      throw new Error('Failed to create test with report');
+    } catch (error: any) {
+      console.error('=== Create test with report error:', error);
+      throw new Error(error.message || 'Failed to create test with report');
     }
   },
 
