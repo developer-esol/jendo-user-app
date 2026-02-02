@@ -49,7 +49,6 @@ export const ENDPOINTS = {
     LATEST: '/jendo-tests/latest',
     BY_RISK_LEVEL: (level: string) => `/jendo-tests/risk-level/${level}`,
     CREATE: '/jendo-tests',
-    CREATE_WITH_REPORT: '/jendo-tests/with-report',
     SEARCH: '/jendo-tests/search',
   },
   JENDO_REPORTS: {
