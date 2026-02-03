@@ -8,6 +8,7 @@ import { jendoReportApi, JendoReport } from '../services/jendoReportApi';
 import Pdf from 'react-native-pdf';
 import { WebView } from 'react-native-webview';
 import { authService } from '../../../services/authService';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -72,21 +73,53 @@ export const JendoReportDetailScreen: React.FC = () => {
     
     setDownloading(true);
     try {
-      const downloadUrl = jendoReportApi.getDownloadUrl(report.id);
-      
       if (Platform.OS === 'web') {
-        // Create a temporary anchor element to trigger download
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = report.originalFileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        Alert.alert('Success', 'Report download started.');
+        // Use authenticated download for web
+        await jendoReportApi.downloadReport(report.id, report.originalFileName);
+        Alert.alert('Success', 'Report downloaded successfully.');
       } else {
-        // On mobile, open URL which will prompt download/save
-        await Linking.openURL(downloadUrl);
-        Alert.alert('Success', 'Report download started. Check your downloads folder.');
+        // For mobile, use react-native-blob-util with authentication
+        const token = await authService.getStoredToken();
+        const downloadUrl = jendoReportApi.getDownloadUrl(report.id);
+        
+        const { config, fs } = ReactNativeBlobUtil;
+        const documentsDir = Platform.OS === 'ios' 
+          ? fs.dirs.DocumentDir 
+          : fs.dirs.DownloadDir;
+        const filePath = `${documentsDir}/${report.originalFileName}`;
+        
+        const configOptions = Platform.select({
+          ios: {
+            fileCache: true,
+            path: filePath,
+            appendExt: 'pdf',
+          },
+          android: {
+            addAndroidDownloads: {
+              useDownloadManager: true,
+              notification: true,
+              path: filePath,
+              description: 'Downloading Jendo report',
+              title: report.originalFileName,
+              mime: 'application/pdf',
+            },
+          },
+        });
+
+        ReactNativeBlobUtil.config(configOptions || {})
+          .fetch('GET', downloadUrl, {
+            Authorization: `Bearer ${token}`,
+          })
+          .then((res) => {
+            if (Platform.OS === 'ios') {
+              ReactNativeBlobUtil.ios.openDocument(res.path());
+            }
+            Alert.alert('Success', 'Report downloaded successfully.');
+          })
+          .catch((error) => {
+            console.error('Download error:', error);
+            Alert.alert('Error', 'Failed to download report. Please try again.');
+          });
       }
     } catch (error) {
       console.error('Download error:', error);

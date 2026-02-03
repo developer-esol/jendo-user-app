@@ -134,8 +134,36 @@ export const jendoReportApi = {
     return `${baseUrl}/jendo-reports/${reportId}/download`;
   },
 
-  /**
-   * Delete a Jendo report
+  /**   * Download a Jendo report file with authentication
+   */
+  downloadReport: async (reportId: string, fileName: string): Promise<void> => {
+    try {
+      console.log('=== Downloading Jendo report:', reportId);
+      const { backendApi } = await import('../../../services/backendApi');
+      
+      // Download file as blob with authentication
+      const blob = await backendApi.downloadFile(
+        ENDPOINTS.JENDO_REPORTS.DOWNLOAD(reportId)
+      );
+
+      // Create download link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log('=== Report downloaded successfully');
+    } catch (error: any) {
+      console.error('=== Download report error:', error);
+      throw new Error(error.message || 'Failed to download Jendo report');
+    }
+  },
+
+  /**   * Delete a Jendo report
    */
   deleteReport: async (id: string): Promise<void> => {
     try {

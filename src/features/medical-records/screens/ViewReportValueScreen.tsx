@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Linking, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Linking, Modal, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
 import { COLORS } from '../../../config/theme.config';
 import { reportApi, ReportItemValue, ReportAttachment } from '../services/reportApi';
 import { useToast } from '../../../providers/ToastProvider';
+import ReactNativeBlobUtil from 'react-native-blob-util';
+import { authService } from '../../../services/authService';
 
 export const ViewReportValueScreen: React.FC = () => {
   const router = useRouter();
@@ -71,12 +73,113 @@ export const ViewReportValueScreen: React.FC = () => {
     }
   };
 
-  const handleDownloadAttachment = async (attachmentId: number) => {
-    const url = reportApi.getAttachmentDownloadUrl(attachmentId);
-    if (Platform.OS === 'web') {
-      window.open(url, '_blank');
-    } else {
-      await Linking.openURL(url);
+  const handleDownloadAttachment = async (attachment: ReportAttachment) => {
+    try {
+      if (Platform.OS === 'web') {
+        // Use authenticated download for web
+        const fileName = attachment.fileUrl.split('/').pop() || `attachment-${attachment.id}`;
+        await reportApi.downloadAttachment(attachment.id, fileName);
+        showToast('Attachment downloaded successfully', 'success');
+      } else {
+        // For mobile, use react-native-blob-util with authentication
+        const token = await authService.getStoredToken();
+        const downloadUrl = reportApi.getAttachmentDownloadUrl(attachment.id);
+        
+        const { config, fs } = ReactNativeBlobUtil;
+        const documentsDir = Platform.OS === 'ios' 
+          ? fs.dirs.DocumentDir 
+          : fs.dirs.DownloadDir;
+        
+        const fileName = attachment.fileUrl.split('/').pop() || `attachment-${attachment.id}`;
+        const filePath = `${documentsDir}/${fileName}`;
+        
+        const configOptions = Platform.select({
+          ios: {
+            fileCache: true,
+            path: filePath,
+            appendExt: attachment.fileType?.includes('pdf') ? 'pdf' : 'jpg',
+          },
+          android: {
+            addAndroidDownloads: {
+              useDownloadManager: true,
+              notification: true,
+              path: filePath,
+              description: 'Downloading report attachment',
+              title: fileName,
+              mime: attachment.fileType || 'application/octet-stream',
+            },
+          },
+        });
+
+        ReactNativeBlobUtil.config(configOptions || {})
+          .fetch('GET', downloadUrl, {
+            Authorization: `Bearer ${token}`,
+          })
+          .then((res) => {
+            if (Platform.OS === 'ios') {
+              ReactNativeBlobUtil.ios.openDocument(res.path());
+            }
+            showToast('Attachment downloaded successfully', 'success');
+          })
+          .catch((error) => {
+            console.error('Download error:', error);
+            showToast('Failed to download attachment', 'error');
+          });
+      }
+    } catch (error: any) {
+      console.error('Download error:', error);
+      showToast(error.message || 'Failed to download attachment', 'error');
+    }
+  };
+
+  const handleViewAttachment = async (attachment: ReportAttachment) => {
+    try {
+      if (Platform.OS === 'web') {
+        // Use authenticated view for web - opens in new tab
+        await reportApi.viewAttachment(attachment.id);
+      } else {
+        // For mobile, download to temp location and open immediately
+        const token = await authService.getStoredToken();
+        const downloadUrl = reportApi.getAttachmentDownloadUrl(attachment.id);
+        
+        const { config, fs } = ReactNativeBlobUtil;
+        const fileName = attachment.fileUrl.split('/').pop() || `attachment-${attachment.id}`;
+        const fileExt = attachment.fileType?.includes('pdf') ? 'pdf' : 'jpg';
+        
+        // Use cache directory for viewing
+        const cacheDir = Platform.OS === 'ios' ? fs.dirs.CacheDir : fs.dirs.CacheDir;
+        const filePath = `${cacheDir}/${fileName}`;
+        
+        showToast('Opening attachment...', 'info');
+        
+        ReactNativeBlobUtil.config({
+          fileCache: true,
+          path: filePath,
+          appendExt: fileExt,
+        })
+          .fetch('GET', downloadUrl, {
+            Authorization: `Bearer ${token}`,
+          })
+          .then((res) => {
+            // Open the file immediately after download
+            if (Platform.OS === 'ios') {
+              ReactNativeBlobUtil.ios.openDocument(res.path());
+            } else {
+              // For Android, use file opener
+              ReactNativeBlobUtil.android.actionViewIntent(
+                res.path(),
+                attachment.fileType || 'application/octet-stream'
+              );
+            }
+          })
+          .catch((error) => {
+            console.error('View error:', error);
+            showToast('Failed to open attachment', 'error');
+          });
+      }
+    } catch (error: any) {
+      console.error('View error:', error);
+      showToast(error.message || 'Failed to view attachment', 'error');
     }
   };
 
@@ -215,33 +318,69 @@ export const ViewReportValueScreen: React.FC = () => {
               Attachments ({value.attachments.length})
             </Text>
             {value.attachments.map((attachment) => (
-              <TouchableOpacity
+              <View
                 key={attachment.id}
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
                   backgroundColor: '#f5f5f5',
                   borderRadius: 8,
                   padding: 12,
                   marginBottom: 8,
                 }}
-                onPress={() => handleDownloadAttachment(attachment.id)}
               >
-                <Ionicons 
-                  name={attachment.fileType?.includes('pdf') ? 'document-text' : 'image'} 
-                  size={28} 
-                  color={COLORS.primary} 
-                />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '500', color: COLORS.text }} numberOfLines={1}>
-                    {attachment.fileUrl.split('/').pop()}
-                  </Text>
-                  <Text style={{ fontSize: 12, color: COLORS.textSecondary }}>
-                    Tap to download
-                  </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                  <Ionicons 
+                    name={attachment.fileType?.includes('pdf') ? 'document-text' : 'image'} 
+                    size={28} 
+                    color={COLORS.primary} 
+                  />
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '500', color: COLORS.text }} numberOfLines={1}>
+                      {attachment.fileUrl.split('/').pop()}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: COLORS.textSecondary }}>
+                      {attachment.fileType || 'Unknown type'}
+                    </Text>
+                  </View>
                 </View>
-                <Ionicons name="download-outline" size={20} color={COLORS.primary} />
-              </TouchableOpacity>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: COLORS.primary,
+                      borderRadius: 6,
+                      paddingVertical: 10,
+                      paddingHorizontal: 12,
+                    }}
+                    onPress={() => handleViewAttachment(attachment)}
+                  >
+                    <Ionicons name="eye-outline" size={18} color="#fff" />
+                    <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14, marginLeft: 6 }}>
+                      View
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#10B981',
+                      borderRadius: 6,
+                      paddingVertical: 10,
+                      paddingHorizontal: 12,
+                    }}
+                    onPress={() => handleDownloadAttachment(attachment)}
+                  >
+                    <Ionicons name="download-outline" size={18} color="#fff" />
+                    <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14, marginLeft: 6 }}>
+                      Download
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             ))}
           </View>
         )}

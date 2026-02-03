@@ -220,6 +220,20 @@ class BackendApiClient {
     const response = await this.client.delete<T>(url, config);
     return response.data;
   }
+
+  /**
+   * Download file with authentication
+   * 
+   * @param url Endpoint URL
+   * @param filename Optional filename for the download
+   * @returns Blob response
+   */
+  async downloadFile(url: string, filename?: string): Promise<Blob> {
+    const response = await this.client.get(url, {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
 }
 
 // Export singleton instance

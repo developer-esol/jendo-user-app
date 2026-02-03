@@ -262,4 +262,59 @@ export const reportApi = {
     const baseUrl = process.env.EXPO_PUBLIC_API_URL || '/api';
     return `${baseUrl}${ENDPOINTS.REPORTS.ATTACHMENT_DOWNLOAD(attachmentId)}`;
   },
+
+  /**
+   * Download an attachment with authentication (web platform)
+   */
+  downloadAttachment: async (attachmentId: number, fileName?: string): Promise<void> => {
+    try {
+      console.log('=== Downloading attachment:', attachmentId);
+      
+      // Download file as blob with authentication
+      const blob = await backendApi.downloadFile(
+        ENDPOINTS.REPORTS.ATTACHMENT_DOWNLOAD(attachmentId)
+      );
+
+      // Create download link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || `attachment-${attachmentId}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log('=== Attachment downloaded successfully');
+    } catch (error: any) {
+      console.error('=== Download attachment error:', error);
+      throw new Error(error.message || 'Failed to download attachment');
+    }
+  },
+
+  /**
+   * View an attachment in a new tab with authentication (web platform)
+   */
+  viewAttachment: async (attachmentId: number): Promise<void> => {
+    try {
+      console.log('=== Viewing attachment:', attachmentId);
+      
+      // Download file as blob with authentication
+      const blob = await backendApi.downloadFile(
+        ENDPOINTS.REPORTS.ATTACHMENT_DOWNLOAD(attachmentId)
+      );
+
+      // Create blob URL and open in new tab
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+
+      // Clean up the URL after a delay
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+
+      console.log('=== Attachment opened for viewing');
+    } catch (error: any) {
+      console.error('=== View attachment error:', error);
+      throw new Error(error.message || 'Failed to view attachment');
+    }
+  },
 };

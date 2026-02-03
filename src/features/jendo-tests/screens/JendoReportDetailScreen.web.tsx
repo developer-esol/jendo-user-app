@@ -61,16 +61,9 @@ export const JendoReportDetailScreen: React.FC = () => {
     
     setDownloading(true);
     try {
-      const downloadUrl = jendoReportApi.getDownloadUrl(report.id);
-      
-      // Create a temporary anchor element to trigger download
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = report.originalFileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      Alert.alert('Success', 'Report download started.');
+      // Use authenticated download for web
+      await jendoReportApi.downloadReport(report.id, report.originalFileName);
+      Alert.alert('Success', 'Report downloaded successfully.');
     } catch (error) {
       console.error('Download error:', error);
       Alert.alert('Error', 'Failed to download report. Please try again.');
