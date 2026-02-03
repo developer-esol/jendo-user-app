@@ -96,6 +96,14 @@ class AuthService {
 
       const authData = response.data.data;
 
+      // Validate user role - only JENDO_USER, USER, and ADMIN can access mobile app
+      const userRole = authData.user?.role?.name;
+      const allowedRoles = ['JENDO_USER', 'USER', 'ADMIN'];
+      
+      if (!userRole || !allowedRoles.includes(userRole)) {
+        throw new Error('Access denied. This account type is not authorized for mobile app access.');
+      }
+
       // Store tokens securely
       await this.storeToken(authData.accessToken);
       await this.storeRefreshToken(authData.refreshToken);
@@ -180,6 +188,14 @@ class AuthService {
       console.log('Response data:', JSON.stringify(response.data, null, 2));
       
       const authData = response.data.data;
+
+      // Validate user role - only JENDO_USER, USER, and ADMIN can access mobile app
+      const userRole = authData.user?.role?.name;
+      const allowedRoles = ['JENDO_USER', 'USER', 'ADMIN'];
+      
+      if (!userRole || !allowedRoles.includes(userRole)) {
+        throw new Error('Access denied. This account type is not authorized for mobile app access.');
+      }
 
       // Store tokens securely
       console.log('Storing tokens...');
