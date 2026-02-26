@@ -16,6 +16,7 @@ interface FormInputProps {
   suffix?: string;
   placeholder?: string;
   error?: string;
+  maxLength?: number;
 }
 
 const FormInput: React.FC<FormInputProps> = ({ 
@@ -26,7 +27,8 @@ const FormInput: React.FC<FormInputProps> = ({
   keyboardType = 'default',
   suffix,
   placeholder,
-  error
+  error,
+  maxLength
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -55,6 +57,7 @@ const FormInput: React.FC<FormInputProps> = ({
           onBlur={() => setIsFocused(false)}
           selectionColor={COLORS.primary}
           cursorColor={COLORS.primary}
+          maxLength={maxLength}
         />
         {suffix && <Text style={[styles.suffix, isFocused && styles.suffixFocused]}>{suffix}</Text>}
         {editable && !suffix && (
@@ -331,10 +334,44 @@ export default function PersonalInfoScreen() {
       newErrors.firstName = 'First name is required';
     } else if (formData.firstName.trim().length < 2) {
       newErrors.firstName = 'First name must be at least 2 characters';
+    } else if (formData.firstName.trim().length > 50) {
+      newErrors.firstName = 'First name cannot exceed 50 characters';
+    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.firstName.trim())) {
+      newErrors.firstName = 'First name can only contain letters, spaces, hyphens, and apostrophes';
     }
 
-    if (formData.phone && !/^\+?[\d\s-]{8,15}$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    if (formData.lastName.trim()) {
+      if (formData.lastName.trim().length < 2) {
+        newErrors.lastName = 'Last name must be at least 2 characters';
+      } else if (formData.lastName.trim().length > 50) {
+        newErrors.lastName = 'Last name cannot exceed 50 characters';
+      } else if (!/^[a-zA-Z\s'-]+$/.test(formData.lastName.trim())) {
+        newErrors.lastName = 'Last name can only contain letters, spaces, hyphens, and apostrophes';
+      }
+    }
+
+    if (formData.phone) {
+      const cleanPhone = formData.phone.replace(/[\s-]/g, '');
+      if (!/^\+?\d+$/.test(cleanPhone)) {
+        newErrors.phone = 'Phone number can only contain digits, spaces, dashes, and +';
+      } else if (cleanPhone.startsWith('+94')) {
+        if (cleanPhone.length !== 12) {
+          newErrors.phone = 'Sri Lankan number should be +94 followed by 9 digits';
+        }
+      } else if (cleanPhone.startsWith('0')) {
+        if (cleanPhone.length !== 10) {
+          newErrors.phone = 'Local number starting with 0 must be exactly 10 digits';
+        }
+      } else if (cleanPhone.startsWith('+')) {
+        const digitsOnly = cleanPhone.substring(1);
+        if (digitsOnly.length < 10 || digitsOnly.length > 14) {
+          newErrors.phone = 'International phone number must be 10-14 digits after +';
+        }
+      } else {
+        if (cleanPhone.length !== 10) {
+          newErrors.phone = 'Phone number must be exactly 10 digits';
+        }
+      }
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -491,6 +528,7 @@ export default function PersonalInfoScreen() {
                 editable={isEditing}
                 placeholder="First name"
                 error={errors.firstName}
+                maxLength={50}
               />
             </View>
             <View style={styles.halfInput}>
@@ -504,6 +542,7 @@ export default function PersonalInfoScreen() {
                 editable={isEditing}
                 placeholder="Last name (optional)"
                 error={errors.lastName}
+                maxLength={50}
               />
             </View>
           </View>
@@ -531,13 +570,11 @@ export default function PersonalInfoScreen() {
             label="Email Address"
             value={formData.email}
             onChangeText={(text) => {
-              setFormData({...formData, email: text});
-              if (errors.email) setErrors({...errors, email: undefined});
+              // Email is read-only, no changes allowed
             }}
-            editable={isEditing}
+            editable={false}
             keyboardType="email-address"
             placeholder="e.g., john@example.com"
-            error={errors.email}
           />
 
           <GenderDropdown

@@ -17,7 +17,7 @@ import type { AxiosInstance } from 'axios';
 import { secureStorage } from '../utils/secureStorage';
 
 // Auth Service runs on port 8080
-const AUTH_SERVICE_URL = process.env.EXPO_PUBLIC_AUTH_URL || 'http://188.166.240.119:8080/api/auth';
+const AUTH_SERVICE_URL = process.env.EXPO_PUBLIC_AUTH_URL || 'http://192.168.130.29:8080/api/auth';
 
 console.log('=== AUTH SERVICE INITIALIZED ===');
 console.log('process.env.EXPO_PUBLIC_AUTH_URL:', process.env.EXPO_PUBLIC_AUTH_URL);
@@ -220,7 +220,9 @@ class AuthService {
   async sendOtp(email: string): Promise<{ success: boolean; message: string }> {
     try {
       const response = await this.client.post('/send-otp', { email });
-      return response.data;
+      // Backend returns ApiResponse<Map>: { success, message, data: { message: "..." } }
+      const apiResponse = response.data;
+      return { success: apiResponse?.success ?? false, message: apiResponse?.message ?? 'OTP sent' };
     } catch (error: any) {
       throw this.handleError(error);
     }
@@ -232,7 +234,10 @@ class AuthService {
   async verifyOtp(email: string, otp: string): Promise<{ success: boolean; verified: boolean }> {
     try {
       const response = await this.client.post('/verify-otp', { email, otp });
-      return response.data;
+      // Backend returns ApiResponse<OTPVerifyResponse>: { success, message, data: { verified } }
+      const apiResponse = response.data;
+      const verified = apiResponse?.data?.verified ?? false;
+      return { success: apiResponse?.success ?? false, verified };
     } catch (error: any) {
       throw this.handleError(error);
     }
@@ -244,7 +249,9 @@ class AuthService {
   async confirmSignup(payload: { email: string; password: string; firstName: string; lastName?: string; phone?: string }): Promise<{ success: boolean; message: string }> {
     try {
       const response = await this.client.post('/register/confirm', payload);
-      return response.data;
+      // Backend returns ApiResponse<Void>: { success, message, data: null }
+      const apiResponse = response.data;
+      return { success: apiResponse?.success ?? false, message: apiResponse?.message ?? 'Registration complete' };
     } catch (error: any) {
       throw this.handleError(error);
     }
@@ -341,12 +348,19 @@ class AuthService {
    * Handle API errors
    * 
    * @param error Axios error
-   * @returns Error object
+   * @returns Error object with status preserved
    */
   private handleError(error: any): Error {
     if (error.response) {
       const message = error.response.data?.message || 'Authentication failed';
-      return new Error(message);
+      const status = error.response.status;
+      const enhancedError: any = new Error(message);
+      enhancedError.status = status;
+      enhancedError.response = {
+        status,
+        data: error.response.data,
+      };
+      return enhancedError;
     } else if (error.request) {
       return new Error('Network error - Auth Service unreachable');
     } else {

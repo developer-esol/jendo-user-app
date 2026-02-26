@@ -54,39 +54,62 @@ export const VerifyOTPScreen: React.FC = () => {
     const errorMessage = error?.message || error?.response?.data?.message || error?.response?.data?.error || 'An error occurred';
     const errorStr = errorMessage.toLowerCase();
 
+    // Check for duplicate email / already registered (check FIRST before status code checks)
+    if (errorStr.includes('already registered') || errorStr.includes('already exists') ||
+        errorStr.includes('duplicate') ||
+        (errorStr.includes('email') && (errorStr.includes('already') || errorStr.includes('exists') || 
+         errorStr.includes('registered') || errorStr.includes('taken') || errorStr.includes('in use')))) {
+      return 'An account with this email already exists. Please use a different email or login instead.';
+    }
+
     // Check for 400 status code (most common error)
-    if (statusCode === 400 || errorStr.includes('status code 400') || errorStr.includes('400')) {
+    if (statusCode === 400 || errorStr.includes('status code 400')) {
       // Check if it's about duplicate email
       if (errorStr.includes('email') || errorStr.includes('already') || 
           errorStr.includes('exists') || errorStr.includes('duplicate')) {
         return 'An account with this email already exists. Please use a different email or login instead.';
       }
       // Generic 400 error - likely invalid OTP or data
-      return 'Invalid verification code. Please check your code and try again.';
+      return 'Invalid verification code. The 6-digit code you entered is incorrect. Please check your email and try again.';
     }
 
     // Check for 409 status code (conflict - duplicate resource)
-    if (statusCode === 409 || errorStr.includes('status code 409') || errorStr.includes('409')) {
+    if (statusCode === 409 || errorStr.includes('status code 409')) {
       return 'An account with this email already exists. Please use a different email or login instead.';
     }
 
     // Invalid OTP
-    if (errorStr.includes('invalid') && (errorStr.includes('otp') || errorStr.includes('code'))) {
-      return 'Invalid verification code. Please check and try again.';
+    if (errorStr.includes('invalid') && (errorStr.includes('otp') || errorStr.includes('code') || errorStr.includes('verification'))) {
+      return 'Invalid verification code. The code you entered is incorrect. Please check your email and try again.';
+    }
+
+    // Incorrect/wrong OTP
+    if ((errorStr.includes('incorrect') || errorStr.includes('wrong')) && (errorStr.includes('otp') || errorStr.includes('code'))) {
+      return 'Incorrect verification code. Please enter the 6-digit code from your email.';
     }
 
     // Expired OTP
     if (errorStr.includes('expired') || errorStr.includes('expire')) {
-      return 'Verification code has expired. Please request a new code.';
+      return 'Verification code has expired. Please tap "Resend Code" to receive a new one.';
     }
 
     // OTP not found
-    if (errorStr.includes('not found') && (errorStr.includes('otp') || errorStr.includes('code'))) {
-      return 'Verification code not found. Please request a new code.';
+    if (errorStr.includes('not found') && (errorStr.includes('otp') || errorStr.includes('code') || errorStr.includes('verification'))) {
+      return 'Verification code not found. Please request a new code by tapping "Resend Code".';
+    }
+
+    // Too many attempts
+    if (errorStr.includes('too many') && (errorStr.includes('attempt') || errorStr.includes('invalid'))) {
+      return 'Too many invalid attempts. Please request a new code by tapping "Resend Code".';
+    }
+
+    // Email not verified
+    if (errorStr.includes('not verified') || errorStr.includes('email not verified')) {
+      return 'Email verification required. Please request a new code and verify first.';
     }
 
     // Fallback to a generic user-friendly message
-    return 'Verification failed. Please check your code and try again.';
+    return 'Verification failed. Please check the 6-digit code from your email and try again.';
   };
 
   const handleVerify = async () => {
@@ -114,7 +137,12 @@ export const VerifyOTPScreen: React.FC = () => {
       }
 
       // 1. Verify OTP
-      await authApi.verifyOtp({ email, otp: otpCode });
+      const verifyResult = await authApi.verifyOtp({ email, otp: otpCode });
+      
+      // Defensive check: ensure OTP was actually verified successfully
+      if (!verifyResult || !verifyResult.verified || !verifyResult.success) {
+        throw new Error('Invalid verification code');
+      }
 
       if (signupData) {
         // Signup flow: confirm signup on Auth Service (creates user but does NOT log in)
@@ -236,6 +264,8 @@ export const VerifyOTPScreen: React.FC = () => {
                 keyboardType="number-pad"
                 maxLength={1}
                 selectTextOnFocus
+                cursorColor={COLORS.primary}
+                selectionColor={COLORS.primary}
               />
             ))}
           </View>

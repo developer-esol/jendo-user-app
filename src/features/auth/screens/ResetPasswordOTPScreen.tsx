@@ -85,7 +85,7 @@ export const ResetPasswordOTPScreen: React.FC = () => {
       await AsyncStorage.setItem('passwordResetOTP', otpCode);
       router.push('/auth/new-password');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to proceed. Please try again.';
+      const errorMessage = err instanceof Error ? err.message : 'Invalid verification code. Please check the code from your email and try again.';
       showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
@@ -146,6 +146,8 @@ export const ResetPasswordOTPScreen: React.FC = () => {
                 keyboardType="number-pad"
                 maxLength={1}
                 selectTextOnFocus
+                cursorColor={COLORS.primary}
+                selectionColor={COLORS.primary}
               />
             ))}
           </View>

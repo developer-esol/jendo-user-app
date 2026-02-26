@@ -16,7 +16,7 @@ import type { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axio
 import { authService } from './authService';
 
 // Backend runs on port 8090
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://188.166.240.119:8090/api';
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.130.29:8090/api';
 
 interface ApiErrorResponse {
   success: boolean;

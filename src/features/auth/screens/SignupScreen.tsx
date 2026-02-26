@@ -47,12 +47,16 @@ export const SignupScreen: React.FC = () => {
       newErrors.firstName = 'First name is required';
     } else if (formData.firstName.trim().length < 2) {
       newErrors.firstName = 'First name must be at least 2 characters';
+    } else if (formData.firstName.trim().length > 50) {
+      newErrors.firstName = 'First name cannot exceed 50 characters';
     }
     
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     } else if (formData.lastName.trim().length < 2) {
       newErrors.lastName = 'Last name must be at least 2 characters';
+    } else if (formData.lastName.trim().length > 50) {
+      newErrors.lastName = 'Last name cannot exceed 50 characters';
     }
     
     if (!formData.email.trim()) {
@@ -70,14 +74,27 @@ export const SignupScreen: React.FC = () => {
       
       if (!/^\+?\d+$/.test(cleanPhone)) {
         newErrors.phone = 'Phone number can only contain digits, spaces, dashes, and +';
-      } else if (cleanPhone.startsWith('+') && cleanPhone.length < 11) {
-        newErrors.phone = 'International phone number must be at least 10 digits';
-      } else if (!cleanPhone.startsWith('+') && cleanPhone.length < 10) {
-        newErrors.phone = 'Phone number must be at least 10 digits';
-      } else if (cleanPhone.length > 15) {
-        newErrors.phone = 'Phone number cannot exceed 15 digits';
-      } else if (cleanPhone.startsWith('+94') && cleanPhone.length !== 12) {
-        newErrors.phone = 'Sri Lankan number should be in format +94XXXXXXXXX (12 digits total)';
+      } else if (cleanPhone.startsWith('+94')) {
+        // Sri Lankan international format: +94XXXXXXXXX (12 digits total, 9 digits after +94)
+        if (cleanPhone.length !== 12) {
+          newErrors.phone = 'Sri Lankan number should be +94 followed by 9 digits (e.g., +94771234567)';
+        }
+      } else if (cleanPhone.startsWith('0')) {
+        // Sri Lankan local format: 0XXXXXXXXX (10 digits total)
+        if (cleanPhone.length !== 10) {
+          newErrors.phone = 'Local number starting with 0 must be exactly 10 digits (e.g., 0771234567)';
+        }
+      } else if (cleanPhone.startsWith('+')) {
+        // Other international numbers: at least 10 digits after +
+        const digitsOnly = cleanPhone.substring(1);
+        if (digitsOnly.length < 10 || digitsOnly.length > 14) {
+          newErrors.phone = 'International phone number must be 10-14 digits after +';
+        }
+      } else {
+        // Local number without leading 0 — must be exactly 10 digits
+        if (cleanPhone.length !== 10) {
+          newErrors.phone = 'Phone number must be exactly 10 digits';
+        }
       }
     }
     

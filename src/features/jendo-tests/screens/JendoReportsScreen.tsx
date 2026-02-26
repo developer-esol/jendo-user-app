@@ -121,13 +121,14 @@ export const JendoReportsScreen: React.FC = () => {
   );
 
   return (
-    <ScreenWrapper safeArea backgroundColor="#FFFFFF">
+    <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white} edges={[]}>
       <View style={{
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 12,
+        backgroundColor: COLORS.white,
       }}>
         <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
           <Image source={require('../../../../assets/images/jendo-logo.png')} style={{ width: 24, height: 24, tintColor: COLORS.primary }} resizeMode="contain" />
@@ -157,6 +158,8 @@ export const JendoReportsScreen: React.FC = () => {
             onChangeText={setSearchQuery}
             placeholder="Search reports..."
             placeholderTextColor="#9CA3AF"
+            cursorColor={COLORS.primary}
+            selectionColor={COLORS.primary}
           />
         </View>
       </View>

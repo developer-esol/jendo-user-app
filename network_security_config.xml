@@ -11,6 +11,7 @@
     <!-- Specifically allow your API server -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">188.166.240.119</domain>
+        <domain includeSubdomains="true">192.168.130.29</domain>
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />

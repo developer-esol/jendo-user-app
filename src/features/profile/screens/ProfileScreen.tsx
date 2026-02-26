@@ -195,7 +195,9 @@ export const ProfileScreen: React.FC = () => {
   return (
     <ScreenWrapper safeArea padded={false} backgroundColor={COLORS.white} edges={[]}>
       <View style={styles.header}>
-        <Image source={{ uri: userAvatar || defaultAvatar }} style={styles.avatar} />
+        <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
+          <Image source={require('../../../../assets/images/jendo-logo.png')} style={{ width: 24, height: 24, tintColor: COLORS.primary }} resizeMode="contain" />
+        </View>
         <Text style={styles.headerTitle}>Profile</Text>
         <TouchableOpacity 
           style={styles.notificationButton}
